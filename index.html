@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Jarvis</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{
+  --bg:#070b12; --bg2:#0d141f; --panel:#0e1621; --border:#1c2b3d;
+  --text:#dbe8f5; --text-dim:#5c7691; --accent:#36d6ff; --accent-dim:#1a3a4a;
+  --accent2:#7afcd6; --danger:#ff5d6c;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',Arial,sans-serif;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  padding-left:max(16px, env(safe-area-inset-left,0px));
+  padding-right:max(16px, env(safe-area-inset-right,0px));
+}
+.brand{font-family:'Orbitron',Arial,sans-serif}
+
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 0 10px;flex-shrink:0;
+}
+.brand{font-size:20px;letter-spacing:4px;color:var(--accent);text-transform:uppercase}
+.status{font-size:12px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--text-dim);transition:background .3s,box-shadow .3s}
+.status-dot.live{background:var(--accent2);box-shadow:0 0 10px var(--accent2)}
+
+.core-wrap{
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  padding:6px 0 2px;position:relative;
+}
+.core{
+  width:min(52vw,220px);height:min(52vw,220px);position:relative;
+}
+.core svg{width:100%;height:100%;display:block}
+.sun{transition:r .2s ease;filter:drop-shadow(0 0 6px var(--accent2)) drop-shadow(0 0 14px var(--accent-dim))}
+.core.listening .sun{animation:pulse 1.1s ease-in-out infinite}
+.core.speaking .sun{animation:pulse .5s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+
+.orbit-ring{fill:none;stroke:var(--border);stroke-width:1}
+.orbit-group{transform-origin:100px 100px}
+.orbit-group.o1{animation:spin 6s linear infinite}
+.orbit-group.o2{animation:spin 10s linear infinite}
+.orbit-group.o3{animation:spin 16s linear infinite}
+.orbit-group.o4{animation:spin 24s linear infinite}
+.orbit-group.o5{animation:spin 34s linear infinite}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+.panel{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.tabs{display:flex;gap:8px;flex-shrink:0}
+.tab{
+  flex:1;text-align:center;padding:9px 0;border-radius:10px;
+  font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);
+  background:var(--panel);border:1px solid var(--border);cursor:pointer;
+}
+.tab.active{color:var(--accent2);border-color:var(--accent-dim)}
+
+.view{flex:1;min-height:0;overflow-y:auto;display:none;flex-direction:column;gap:10px;padding:4px 2px 8px}
+.view.active{display:flex}
+
+.line{font-size:15px;line-height:1.45;max-width:92%}
+.line.user{color:var(--text);align-self:flex-end;text-align:right}
+.line.jarvis{color:var(--accent2)}
+.line .who{display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:2px}
+
+.reminder{
+  display:flex;align-items:center;gap:10px;
+  background:var(--panel);border:1px solid var(--border);border-radius:12px;
+  padding:12px 14px;
+}
+.reminder .txt{flex:1;font-size:15px;line-height:1.3;min-width:0}
+.reminder .when{display:block;font-size:11px;color:var(--text-dim);margin-top:2px}
+.reminder .del{
+  background:none;border:none;color:var(--danger);font-size:18px;line-height:1;
+  padding:4px 6px;cursor:pointer;flex-shrink:0;
+}
+.empty{color:var(--text-dim);font-size:14px;text-align:center;padding:30px 10px}
+
+.controls{
+  flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:10px 0 max(16px, env(safe-area-inset-bottom,0px));
+}
+.hint{font-size:12px;color:var(--text-dim);text-align:center;min-height:16px}
+.mic-btn{
+  width:64px;height:64px;border-radius:50%;
+  background:var(--panel);border:2px solid var(--accent-dim);
+  color:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:border-color .2s,color .2s,transform .1s;
+}
+.mic-btn:active{transform:scale(.95)}
+.mic-btn.on{border-color:var(--accent);color:var(--accent2);box-shadow:0 0 24px var(--accent-dim)}
+.mic-btn svg{width:24px;height:24px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">JARVIS</div>
+  <div class="status"><span class="status-dot" id="statusDot"></span><span id="statusText">Em espera</span></div>
+</div>
+
+<div class="core-wrap">
+  <div class="core" id="core">
+    <svg viewBox="0 0 200 200">
+      <circle class="orbit-ring" cx="100" cy="100" r="26"/>
+      <circle class="orbit-ring" cx="100" cy="100" r="44"/>
+      <circle class="orbit-ring" cx="100" cy="100" r="62"/>
+      <circle class="orbit-ring" cx="100" cy="100" r="80"/>
+      <circle class="orbit-ring" cx="100" cy="100" r="96"/>
+
+      <circle class="sun" cx="100" cy="100" r="11" fill="var(--accent2)"/>
+
+      <g class="orbit-group o1"><circle cx="126" cy="100" r="2.6" fill="#b9b2a6"/></g>
+      <g class="orbit-group o2"><circle cx="144" cy="100" r="3.4" fill="#e3c08a"/></g>
+      <g class="orbit-group o3"><circle cx="162" cy="100" r="3.6" fill="var(--accent)"/></g>
+      <g class="orbit-group o4"><circle cx="180" cy="100" r="3" fill="#e0775a"/></g>
+      <g class="orbit-group o5"><circle cx="196" cy="100" r="5.2" fill="#d8b98a"/></g>
+    </svg>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="tabs">
+    <div class="tab active" data-tab="chat">Conversa</div>
+    <div class="tab" data-tab="reminders">Lembretes</div>
+  </div>
+
+  <div class="view active" id="view-chat"></div>
+
+  <div class="view" id="view-reminders"></div>
+</div>
+
+<div class="controls">
+  <div class="hint" id="hint">Toque no botão e fale com o Jarvis</div>
+  <button class="mic-btn" id="micBtn" aria-label="Falar com o Jarvis">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+      <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
+      <line x1="12" y1="19" x2="12" y2="23"/>
+      <line x1="8" y1="23" x2="16" y2="23"/>
+    </svg>
+  </button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var core = document.getElementById('core');
+  var micBtn = document.getElementById('micBtn');
+  var hint = document.getElementById('hint');
+  var chatView = document.getElementById('view-chat');
+  var remindersView = document.getElementById('view-reminders');
+  var statusDot = document.getElementById('statusDot');
+  var statusText = document.getElementById('statusText');
+  var tabs = document.querySelectorAll('.tab');
+
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(t){ t.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById('view-chat').classList.toggle('active', tab.dataset.tab === 'chat');
+      document.getElementById('view-reminders').classList.toggle('active', tab.dataset.tab === 'reminders');
+    });
+  });
+
+  function addLine(who, text){
+    var div = document.createElement('div');
+    div.className = 'line ' + (who === 'Você' ? 'user' : 'jarvis');
+    var span = document.createElement('span');
+    span.className = 'who';
+    span.textContent = who;
+    div.appendChild(span);
+    div.appendChild(document.createTextNode(text));
+    chatView.appendChild(div);
+    chatView.scrollTop = chatView.scrollHeight;
+  }
+
+  function setStatus(text, live){
+    statusText.textContent = text;
+    statusDot.classList.toggle('live', !!live);
+  }
+
+  // ---------- lembretes (guardados no navegador) ----------
+  var REM_KEY = 'jarvis_lembretes';
+
+  function loadReminders(){
+    try{
+      var raw = localStorage.getItem(REM_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  function saveReminders(list){
+    try{ localStorage.setItem(REM_KEY, JSON.stringify(list)); }catch(e){}
+  }
+  function addReminder(texto){
+    var list = loadReminders();
+    list.unshift({ id: Date.now(), texto: texto, criadoEm: new Date().toISOString() });
+    saveReminders(list);
+    renderReminders();
+  }
+  function removeReminder(id){
+    var list = loadReminders().filter(function(r){ return r.id !== id; });
+    saveReminders(list);
+    renderReminders();
+  }
+  function renderReminders(){
+    var list = loadReminders();
+    remindersView.innerHTML = '';
+    if (!list.length){
+      var empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.textContent = 'Nenhum lembrete ainda. Fala "Jarvis, lembra de..." pra criar um.';
+      remindersView.appendChild(empty);
+      return;
+    }
+    list.forEach(function(r){
+      var row = document.createElement('div');
+      row.className = 'reminder';
+      var txt = document.createElement('div');
+      txt.className = 'txt';
+      txt.textContent = r.texto;
+      var when = document.createElement('span');
+      when.className = 'when';
+      when.textContent = new Date(r.criadoEm).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+      txt.appendChild(when);
+      var del = document.createElement('button');
+      del.className = 'del';
+      del.textContent = '✕';
+      del.setAttribute('aria-label', 'Apagar lembrete');
+      del.addEventListener('click', function(){ removeReminder(r.id); });
+      row.appendChild(txt);
+      row.appendChild(del);
+      remindersView.appendChild(row);
+    });
+  }
+  renderReminders();
+
+  // ---------- entender o que foi falado ----------
+  function extrairLembrete(fala){
+    var padroes = [
+      /lembr(?:a|ete)(?: de| que)?\s+(.+)/i,
+      /anota (?:que|a[ií])?\s*(.+)/i,
+      /n[aã]o deixa eu esquecer (?:de|que)?\s*(.+)/i
+    ];
+    for (var i = 0; i < padroes.length; i++){
+      var m = fala.match(padroes[i]);
+      if (m && m[1] && m[1].trim().length > 1) return m[1].trim();
+    }
+    return null;
+  }
+
+  function responderA(fala){
+    var t = fala.toLowerCase();
+
+    if (t.indexOf('apaga') !== -1 && t.indexOf('lembrete') !== -1){
+      var list = loadReminders();
+      if (!list.length) return 'Você não tem lembretes salvos.';
+      saveReminders([]);
+      renderReminders();
+      return 'Apaguei todos os seus lembretes.';
+    }
+
+    if ((t.indexOf('meus lembretes') !== -1) || (t.indexOf('o que eu tenho') !== -1 && t.indexOf('lembr') !== -1) || (t.indexOf('lista') !== -1 && t.indexOf('lembrete') !== -1)){
+      var list2 = loadReminders();
+      if (!list2.length) return 'Você não tem nenhum lembrete salvo.';
+      var itens = list2.slice(0, 5).map(function(r){ return r.texto; }).join('; ');
+      return 'Seus lembretes: ' + itens + '.';
+    }
+
+    var lembreteTexto = extrairLembrete(fala);
+    if (lembreteTexto){
+      addReminder(lembreteTexto);
+      return 'Lembrete anotado: ' + lembreteTexto + '.';
+    }
+
+    if (t.indexOf('hora') !== -1){
+      var d = new Date();
+      return 'São ' + d.getHours() + ' horas e ' + String(d.getMinutes()).padStart(2,'0') + '.';
+    }
+    if (t.indexOf('data') !== -1 || (t.indexOf('que dia') !== -1)){
+      var d2 = new Date();
+      return 'Hoje é ' + d2.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' }) + '.';
+    }
+    if (t.indexOf('oi') !== -1 || t.indexOf('olá') !== -1 || t.indexOf('ola') !== -1){
+      return 'Olá, Francisco. Como posso ajudar?';
+    }
+    if (t.indexOf('seu nome') !== -1 || t.indexOf('quem é você') !== -1 || t.indexOf('quem e voce') !== -1){
+      return 'Eu sou o Jarvis, seu assistente pessoal.';
+    }
+    if (t.indexOf('obrigad') !== -1){
+      return 'De nada. Estou aqui se precisar.';
+    }
+    return 'Ainda estou aprendendo a responder isso. Mas já posso guardar lembretes: é só falar "lembra de..." seguido do que você quer guardar.';
+  }
+
+  // ---------- fala (texto -> voz) ----------
+  var synth = window.speechSynthesis;
+  function falar(texto){
+    addLine('Jarvis', texto);
+    if (!synth){ return; }
+    var u = new SpeechSynthesisUtterance(texto);
+    u.lang = 'pt-BR';
+    u.rate = 1;
+    u.pitch = 0.85;
+    u.onstart = function(){ core.classList.add('speaking'); setStatus('Falando', true); };
+    u.onend = function(){ core.classList.remove('speaking'); setStatus('Em espera', false); hint.textContent='Toque no botão e fale com o Jarvis'; };
+    synth.cancel();
+    synth.speak(u);
+  }
+
+  // ---------- voz -> texto ----------
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var recognizing = false;
+  var recognition = null;
+
+  if (!SR){
+    hint.textContent = 'Seu navegador não tem reconhecimento de voz. Tente no Chrome ou no Safari atualizado.';
+    micBtn.disabled = true;
+    micBtn.style.opacity = '0.4';
+  } else {
+    recognition = new SR();
+    recognition.lang = 'pt-BR';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = function(){
+      recognizing = true;
+      micBtn.classList.add('on');
+      core.classList.add('listening');
+      setStatus('Ouvindo', true);
+      hint.textContent = 'Pode falar...';
+    };
+
+    recognition.onresult = function(e){
+      var texto = e.results[0][0].transcript;
+      addLine('Você', texto);
+      var resposta = responderA(texto);
+      falar(resposta);
+    };
+
+    recognition.onerror = function(e){
+      hint.textContent = (e.error === 'not-allowed')
+        ? 'Permissão de microfone negada. Ative nas configurações do navegador.'
+        : 'Não entendi, tenta de novo.';
+    };
+
+    recognition.onend = function(){
+      recognizing = false;
+      micBtn.classList.remove('on');
+      core.classList.remove('listening');
+      if (!core.classList.contains('speaking')){ setStatus('Em espera', false); }
+    };
+
+    micBtn.addEventListener('click', function(){
+      if (recognizing){ recognition.stop(); return; }
+      try{
+        synth && synth.cancel();
+        recognition.start();
+      }catch(err){}
+    });
+  }
+})();
+</script>
+</body>
+</html>
