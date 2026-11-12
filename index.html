@@ -101,6 +101,17 @@ body{
 .mic-btn:active{transform:scale(.95)}
 .mic-btn.on{border-color:var(--accent);color:var(--accent2);box-shadow:0 0 24px var(--accent-dim)}
 .mic-btn svg{width:24px;height:24px}
+
+.type-row{display:flex;gap:8px;width:100%;max-width:420px}
+.type-row input{
+  flex:1;min-width:0;background:var(--panel);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);font-size:15px;padding:10px 12px;
+}
+.type-row input:focus{outline:none;border-color:var(--accent-dim)}
+.type-row button{
+  background:var(--panel);border:1px solid var(--accent-dim);color:var(--accent2);
+  border-radius:10px;padding:0 16px;font-size:14px;cursor:pointer;
+}
 </style>
 </head>
 <body>
@@ -151,6 +162,10 @@ body{
       <line x1="8" y1="23" x2="16" y2="23"/>
     </svg>
   </button>
+  <form class="type-row" id="typeForm">
+    <input type="text" id="typeInput" placeholder="ou digite aqui, tipo: lembra de..." autocomplete="off">
+    <button type="submit">Enviar</button>
+  </form>
 </div>
 
 <script>
@@ -370,6 +385,17 @@ body{
       }catch(err){}
     });
   }
+
+  var typeForm = document.getElementById('typeForm');
+  var typeInput = document.getElementById('typeInput');
+  typeForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    var texto = typeInput.value.trim();
+    if (!texto) return;
+    typeInput.value = '';
+    addLine('Você', texto);
+    falar(responderA(texto));
+  });
 })();
 </script>
 </body>
