@@ -542,29 +542,35 @@ body{
   renderCarrinho();
 
   function extrairCarrinho(fala){
-    var texto = null;
-
-    // formato natural: "LED de 19 reais ao carrinho" / "coloca o LED no carrinho"
-    var m1 = fala.match(/(.+?)\s+(?:no|ao|pro|para o)\s+carrinho\b/i);
-    if (m1 && m1[1] && m1[1].trim().length > 1){
-      texto = m1[1].trim().replace(/^(?:coloca|adiciona|p[oõ]e)(?:r)?\s+/i, '').trim();
+    // primeiro procura o preço em QUALQUER posição da frase (antes ou depois de "carrinho")
+    var valor = null;
+    var trabalho = fala;
+    var mv = trabalho.match(/(?:por|de)\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?)?/i);
+    if (mv){
+      valor = paraNumero(mv[1]);
+      trabalho = trabalho.replace(mv[0], ' ').trim();
     }
 
-    // formato com palavra-chave primeiro: "carrinho: LED" / "carrinho LED"
+    var texto = null;
+
+    // formato natural: "LED no carrinho" / "coloca o LED no carrinho" (item antes de "carrinho")
+    var m1 = trabalho.match(/(.+?)\s+(?:no|ao|pro|para o)\s+carrinho\b/i);
+    if (m1 && m1[1] && m1[1].trim().length > 1){
+      texto = m1[1].trim().replace(/^(?:adiciona(?:r)?|coloca(?:r)?|p[oõ]e)\s+/i, '').trim();
+      // se sobrou só o verbo (ex: "adiciona ao carrinho X" — o item vem depois), descarta e tenta de novo
+      if (/^(?:adiciona(?:r)?|coloca(?:r)?|p[oõ]e)$/i.test(texto)) texto = null;
+    }
+
+    // formato com palavra-chave primeiro: "carrinho: LED" / "adiciona no carrinho o LED"
     if (!texto){
-      var m2 = fala.match(/carrinho[:\s]+(.+)/i);
+      var m2 = trabalho.match(/carrinho[:\s]+(.+)/i);
       if (m2 && m2[1] && m2[1].trim().length > 1) texto = m2[1].trim();
     }
 
     if (!texto) return null;
 
-    var valor = null;
-    var mv = texto.match(/(?:por|de)\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?)?/i);
-    if (mv){
-      valor = paraNumero(mv[1]);
-      texto = texto.replace(mv[0], '').trim();
-    }
     texto = texto.replace(/^(?:o|a|os|as|um|uma)\s+/i, '').trim();
+    texto = texto.replace(/\s{2,}/g, ' ').trim();
     if (!texto) texto = 'item';
     return { texto: texto, valor: valor };
   }
