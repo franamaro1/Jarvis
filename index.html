@@ -543,22 +543,29 @@ body{
 
   function extrairCarrinho(fala){
     var texto = null;
-    var padroes = [
-      /carrinho[:\s]+(.+)/i,
-      /(?:coloca|adiciona|p[oõ]e)(?:r)?\s+(?:no|ao)\s+carrinho\s+(.+)/i,
-      /adiciona\s+(.+?)\s+(?:no|ao)\s+carrinho/i
-    ];
-    for (var i = 0; i < padroes.length; i++){
-      var m = fala.match(padroes[i]);
-      if (m && m[1] && m[1].trim().length > 1){ texto = m[1].trim(); break; }
+
+    // formato natural: "LED de 19 reais ao carrinho" / "coloca o LED no carrinho"
+    var m1 = fala.match(/(.+?)\s+(?:no|ao|pro|para o)\s+carrinho\b/i);
+    if (m1 && m1[1] && m1[1].trim().length > 1){
+      texto = m1[1].trim().replace(/^(?:coloca|adiciona|p[oõ]e)(?:r)?\s+/i, '').trim();
     }
+
+    // formato com palavra-chave primeiro: "carrinho: LED" / "carrinho LED"
+    if (!texto){
+      var m2 = fala.match(/carrinho[:\s]+(.+)/i);
+      if (m2 && m2[1] && m2[1].trim().length > 1) texto = m2[1].trim();
+    }
+
     if (!texto) return null;
+
     var valor = null;
-    var mv = texto.match(/por\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?)?/i);
+    var mv = texto.match(/(?:por|de)\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?)?/i);
     if (mv){
       valor = paraNumero(mv[1]);
       texto = texto.replace(mv[0], '').trim();
     }
+    texto = texto.replace(/^(?:o|a|os|as|um|uma)\s+/i, '').trim();
+    if (!texto) texto = 'item';
     return { texto: texto, valor: valor };
   }
 
@@ -1042,9 +1049,12 @@ body{
     if (!synth) return null;
     var vozes = synth.getVoices() || [];
     if (!vozes.length) return null;
+    // primeiro só considera vozes em português; só usa outra língua se o aparelho não tiver nenhuma
+    var candidatas = vozes.filter(function(v){ return v.lang && v.lang.toLowerCase().indexOf('pt') === 0; });
+    if (!candidatas.length) candidatas = vozes;
     var melhor = null;
     var melhorPontos = -Infinity;
-    vozes.forEach(function(v){
+    candidatas.forEach(function(v){
       var p = pontuacaoVoz(v);
       if (p > melhorPontos){ melhorPontos = p; melhor = v; }
     });
