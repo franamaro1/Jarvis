@@ -668,8 +668,37 @@ body{
       var d2 = new Date();
       return 'Hoje é ' + d2.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' }) + '.';
     }
-    if (t.indexOf('oi') !== -1 || t.indexOf('olá') !== -1 || t.indexOf('ola') !== -1){
-      return 'Olá, Francisco. Como posso ajudar?';
+    // ---------- cumprimentos e expressões básicas ----------
+    if (t.indexOf('bom dia') !== -1){
+      return 'Bom dia, Francisco! Como posso ajudar?';
+    }
+    if (t.indexOf('boa tarde') !== -1){
+      return 'Boa tarde, Francisco! Como posso ajudar?';
+    }
+    if (t.indexOf('boa noite') !== -1){
+      var horaAtual = new Date().getHours();
+      return (horaAtual < 11) ? 'Boa noite! Ainda não amanheceu direito por aqui — mas tudo bem, como posso ajudar?' : 'Boa noite, Francisco! Durma bem, qualquer coisa estou por aqui.';
+    }
+    if (t.indexOf('oi') !== -1 || t.indexOf('olá') !== -1 || t.indexOf('ola') !== -1 || t.indexOf('e aí') !== -1 || t.indexOf('eai') !== -1 || t.indexOf('salve') !== -1){
+      return 'Oi, Francisco! Como posso ajudar?';
+    }
+    if ((t.indexOf('tudo bem') !== -1) || (t.indexOf('como você') !== -1 || t.indexOf('como voce') !== -1) || t.indexOf('como vai') !== -1){
+      return 'Tudo certo por aqui! E com você, tá tudo bem?';
+    }
+    if (t.indexOf('por favor') !== -1 && t.trim().split(' ').length <= 3){
+      return 'Pode falar, estou ouvindo.';
+    }
+    if (t.indexOf('com licença') !== -1 || t.indexOf('com licenca') !== -1){
+      return 'Claro, pode falar.';
+    }
+    if (t.indexOf('desculp') !== -1 || t.indexOf('perdão') !== -1 || t.indexOf('perdao') !== -1){
+      return 'Sem problema nenhum.';
+    }
+    if (t.indexOf('parabéns') !== -1 || t.indexOf('parabens') !== -1){
+      return 'Obrigado, Francisco! Muito gentil da sua parte.';
+    }
+    if (t.indexOf('tchau') !== -1 || t.indexOf('até mais') !== -1 || t.indexOf('ate mais') !== -1 || t.indexOf('até logo') !== -1 || t.indexOf('falou') !== -1){
+      return 'Até mais, Francisco! Qualquer coisa é só chamar.';
     }
     if (t.indexOf('seu nome') !== -1 || t.indexOf('quem é você') !== -1 || t.indexOf('quem e voce') !== -1){
       return 'Eu sou o Jarvis, seu assistente pessoal.';
