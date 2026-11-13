@@ -441,7 +441,8 @@ body{
     var padroesValorPrimeiro = [
       /gast(?:ei|o)\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?)?\s*(?:com|em|no|na|de)?\s*(.*)/i,
       /pagu(?:ei)\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?)?\s*(?:por|com|em|no|na)?\s*(.*)/i,
-      /(?:novo gasto|anota(?:r)? um gasto|coloca(?:r)? um gasto)(?:\s+de)?\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?)?\s*(?:com|em|no|na|de)?\s*(.*)/i
+      /(?:novo gasto|anota(?:r)? um gasto|coloca(?:r)? um gasto)(?:\s+de)?\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?)?\s*(?:com|em|no|na|de)?\s*(.*)/i,
+      /usei\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?)?\s*(?:com|em|no|na|de)?\s*(.*)/i
     ];
     for (var i = 0; i < padroesValorPrimeiro.length; i++){
       var m = fala.match(padroesValorPrimeiro[i]);
@@ -556,7 +557,7 @@ body{
     var texto = null;
 
     // formato natural: "LED no carrinho" / "coloca o LED no carrinho" (item antes de "carrinho")
-    var m1 = trabalho.match(/(.+?)\s+(?:no|ao|pro|para o)\s+carrinho\b/i);
+    var m1 = trabalho.match(/(.+?)\s+(?:no|na|ao|pro|para o)\s+(?:carrinho|lista de compras)\b/i);
     if (m1 && m1[1] && m1[1].trim().length > 1){
       texto = m1[1].trim().replace(/^(?:adiciona(?:r)?|coloca(?:r)?|p[oõ]e)\s+/i, '').trim();
       // se sobrou só o verbo (ex: "adiciona ao carrinho X" — o item vem depois), descarta e tenta de novo
@@ -565,7 +566,7 @@ body{
 
     // formato com palavra-chave primeiro: "carrinho: LED" / "adiciona no carrinho o LED"
     if (!texto){
-      var m2 = trabalho.match(/carrinho[:\s]+(.+)/i);
+      var m2 = trabalho.match(/(?:carrinho|lista de compras)[:\s]+(.+)/i);
       if (m2 && m2[1] && m2[1].trim().length > 1) texto = m2[1].trim();
     }
 
@@ -642,6 +643,8 @@ body{
   function extrairTarefa(fala){
     var m = fala.match(/tarefa(?:\s+nova)?(?:\s*:|\s+de|\s+para)?\s*(.+)/i);
     if (m && m[1] && m[1].trim().length > 1) return m[1].trim();
+    var m2 = fala.match(/(?:preciso|tenho que|tenho de)\s+fazer\s+(.+)/i);
+    if (m2 && m2[1] && m2[1].trim().length > 1) return m2[1].trim();
     return null;
   }
 
@@ -704,7 +707,8 @@ body{
     var padroes = [
       /nota[:\s]+(.+)/i,
       /cri(?:a|ar) uma nota(?: sobre| de)?[:\s]*(.+)/i,
-      /nova nota[:\s]*(.+)/i
+      /nova nota[:\s]*(.+)/i,
+      /guarda (?:isso|essa informa[cç][aã]o|essa ideia)(?:\s+que)?\s*[:,]?\s*(.+)/i
     ];
     for (var i = 0; i < padroes.length; i++){
       var m = fala.match(padroes[i]);
@@ -779,7 +783,7 @@ body{
   })();
 
   function extrairTimer(fala){
-    var m = fala.match(/(?:timer|cron[oô]metro).*?(\d+)\s*(minutos?|min|segundos?|seg)\b/i);
+    var m = fala.match(/(?:timer|cron[oô]metro|despertador|daqui a|me avisa)[^\d]*?(\d+)\s*(minutos?|min|segundos?|seg)\b/i);
     if (!m) return null;
     var valor = parseInt(m[1], 10);
     var unidade = m[2].toLowerCase();
@@ -792,7 +796,9 @@ body{
     var padroes = [
       /lembr(?:a|ete)(?:\s+nov[ao])?(?:\s*:|\s+de|\s+que|\s+para)?\s*(.+)/i,
       /anota (?:que|a[ií])?\s*(.+)/i,
-      /n[aã]o deixa eu esquecer (?:de|que)?\s*(.+)/i
+      /n[aã]o deixa eu esquecer (?:de|que)?\s*(.+)/i,
+      /n[aã]o esque[cç]a(?:\s+de|\s+que)?\s*(.+)/i,
+      /me avisa (?:que|para|pra)\s+(.+)/i
     ];
     for (var i = 0; i < padroes.length; i++){
       var m = fala.match(padroes[i]);
@@ -919,7 +925,7 @@ body{
       return 'Anotei: ' + formatarReais(gasto.valor) + (gasto.descricao ? (' com ' + gasto.descricao) : '') + '.';
     }
 
-    if (t.indexOf('apaga') !== -1 && t.indexOf('carrinho') !== -1){
+    if (t.indexOf('apaga') !== -1 && (t.indexOf('carrinho') !== -1 || t.indexOf('lista de compras') !== -1)){
       var listC = loadCarrinho();
       if (!listC.length) return 'Seu carrinho já está vazio.';
       saveCarrinho([]);
@@ -927,13 +933,13 @@ body{
       return 'Esvaziei o carrinho.';
     }
 
-    if ((t.indexOf('meu carrinho') !== -1) || (t.indexOf('lista') !== -1 && t.indexOf('carrinho') !== -1)){
+    if ((t.indexOf('meu carrinho') !== -1) || (t.indexOf('lista') !== -1 && (t.indexOf('carrinho') !== -1 || t.indexOf('compras') !== -1))){
       var listC2 = loadCarrinho().filter(function(it){ return !it.comprado; });
       if (!listC2.length) return 'Seu carrinho está vazio.';
       return 'No carrinho: ' + listC2.slice(0, 5).map(function(it){ return it.texto; }).join('; ') + '.';
     }
 
-    if (t.indexOf('carrinho') !== -1 && (t.indexOf('quanto') !== -1 || t.indexOf('total') !== -1)){
+    if ((t.indexOf('carrinho') !== -1 || t.indexOf('lista de compras') !== -1) && (t.indexOf('quanto') !== -1 || t.indexOf('total') !== -1)){
       var listC3 = loadCarrinho();
       var totalC = listC3.reduce(function(soma, it){ return soma + (it.comprado ? 0 : (it.valor || 0)); }, 0);
       return listC3.length ? ('O carrinho está em ' + formatarReais(totalC) + ' no total.') : 'Seu carrinho está vazio.';
@@ -1027,8 +1033,8 @@ body{
       return escolher(['De nada. Estou aqui se precisar.', 'Disponha! Qualquer coisa é só chamar.']);
     }
     return escolher([
-      'Ainda estou aprendendo a responder isso. Mas já posso guardar lembretes, gastos, tarefas, notas ("nota: ...") e iniciar um timer ("timer de 10 minutos").',
-      'Essa eu ainda não sei. Mas posso guardar lembretes, tarefas, gastos e notas, contar uma piada ou uma curiosidade, e até fazer contas simples.'
+      'Ainda estou aprendendo a responder isso. Mas já posso guardar lembretes, gastos, tarefas, notas, itens no carrinho e iniciar um timer.',
+      'Essa eu ainda não sei. Mas posso guardar lembretes, tarefas, gastos, notas e o que você quer comprar, contar uma piada ou uma curiosidade, e até fazer contas simples.'
     ]);
   }
 
