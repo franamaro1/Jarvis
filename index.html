@@ -711,13 +711,56 @@ body{
 
   // ---------- fala (texto -> voz) ----------
   var synth = window.speechSynthesis;
+  var vozEscolhida = null;
+  var vozPronta = false;
+
+  function pontuacaoVoz(v){
+    var nome = v.name.toLowerCase();
+    var pontos = 0;
+    if (v.lang && v.lang.toLowerCase().indexOf('pt') === 0) pontos += 10;
+    if (v.lang && v.lang.toLowerCase() === 'pt-br') pontos += 4;
+    // nomes conhecidos de vozes masculinas em pt-BR, nas plataformas mais comuns
+    ['felipe','daniel','ricardo','diego','thiago','rodrigo','male','masculin'].forEach(function(palavra){
+      if (nome.indexOf(palavra) !== -1) pontos += 20;
+    });
+    ['luciana','female','feminin','maria','joana'].forEach(function(palavra){
+      if (nome.indexOf(palavra) !== -1) pontos -= 15;
+    });
+    if (nome.indexOf('google') !== -1) pontos += 2;
+    return pontos;
+  }
+
+  function escolherMelhorVoz(){
+    if (!synth) return null;
+    var vozes = synth.getVoices() || [];
+    if (!vozes.length) return null;
+    var melhor = null;
+    var melhorPontos = -Infinity;
+    vozes.forEach(function(v){
+      var p = pontuacaoVoz(v);
+      if (p > melhorPontos){ melhorPontos = p; melhor = v; }
+    });
+    return melhor;
+  }
+
+  function carregarVoz(){
+    vozEscolhida = escolherMelhorVoz();
+    vozPronta = true;
+  }
+  if (synth){
+    carregarVoz();
+    synth.addEventListener('voiceschanged', carregarVoz);
+  }
+
   function falar(texto){
     addLine('Jarvis', texto);
     if (!synth){ return; }
+    if (!vozPronta) carregarVoz();
     var u = new SpeechSynthesisUtterance(texto);
-    u.lang = 'pt-BR';
-    u.rate = 1;
-    u.pitch = 0.85;
+    u.lang = (vozEscolhida && vozEscolhida.lang) ? vozEscolhida.lang : 'pt-BR';
+    if (vozEscolhida) u.voice = vozEscolhida;
+    u.rate = 0.94;
+    u.pitch = 0.62;
     u.onstart = function(){ core.classList.add('speaking'); setStatus('Falando', true); };
     u.onend = function(){ core.classList.remove('speaking'); setStatus('Em espera', false); hint.textContent='Toque no botão e fale com o Jarvis'; };
     synth.cancel();
