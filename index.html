@@ -106,6 +106,34 @@ body{
   padding:4px 0 4px 6px;cursor:pointer;flex-shrink:0;
 }
 
+.task{
+  display:flex;align-items:center;gap:10px;
+  background:var(--panel);border:1px solid var(--border);border-radius:12px;
+  padding:12px 14px;
+}
+.task .check{
+  width:22px;height:22px;border-radius:50%;border:2px solid var(--accent-dim);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:none;color:var(--accent2);font-size:13px;cursor:pointer;padding:0;
+}
+.task.done .check{background:var(--accent-dim);border-color:var(--accent2)}
+.task .txt{flex:1;font-size:15px;line-height:1.3;min-width:0}
+.task.done .txt{color:var(--text-dim);text-decoration:line-through}
+.task .del{
+  background:none;border:none;color:var(--danger);font-size:18px;line-height:1;
+  padding:4px 0 4px 6px;cursor:pointer;flex-shrink:0;
+}
+
+.timer-pill{
+  display:none;align-items:center;gap:8px;align-self:center;
+  background:var(--panel);border:1px solid var(--accent-dim);border-radius:999px;
+  padding:6px 16px;margin-bottom:4px;flex-shrink:0;
+}
+.timer-pill.active{display:flex}
+.timer-pill .t{font-size:16px;font-weight:600;color:var(--accent2);font-variant-numeric:tabular-nums}
+.timer-pill .cancel{background:none;border:none;color:var(--text-dim);font-size:14px;cursor:pointer}
+.core.alert .sun{animation:pulse .35s ease-in-out infinite}
+
 .controls{
   flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:8px;
   padding:10px 0 max(16px, env(safe-area-inset-bottom,0px));
@@ -161,11 +189,17 @@ body{
   </div>
 </div>
 
+<div class="timer-pill" id="timerPill">
+  <span class="t" id="timerText">00:00</span>
+  <button class="cancel" id="timerCancel" type="button">cancelar</button>
+</div>
+
 <div class="panel">
   <div class="tabs">
     <div class="tab active" data-tab="chat">Conversa</div>
     <div class="tab" data-tab="reminders">Lembretes</div>
     <div class="tab" data-tab="expenses">Gastos</div>
+    <div class="tab" data-tab="tasks">Tarefas</div>
   </div>
 
   <div class="view active" id="view-chat"></div>
@@ -173,6 +207,8 @@ body{
   <div class="view" id="view-reminders"></div>
 
   <div class="view" id="view-expenses"></div>
+
+  <div class="view" id="view-tasks"></div>
 </div>
 
 <div class="controls">
@@ -200,10 +236,11 @@ body{
   var chatView = document.getElementById('view-chat');
   var remindersView = document.getElementById('view-reminders');
   var expensesView = document.getElementById('view-expenses');
+  var tasksView = document.getElementById('view-tasks');
   var statusDot = document.getElementById('statusDot');
   var statusText = document.getElementById('statusText');
   var tabs = document.querySelectorAll('.tab');
-  var views = { chat: chatView, reminders: remindersView, expenses: expensesView };
+  var views = { chat: chatView, reminders: remindersView, expenses: expensesView, tasks: tasksView };
 
   tabs.forEach(function(tab){
     tab.addEventListener('click', function(){
@@ -385,6 +422,154 @@ body{
     return null;
   }
 
+  // ---------- tarefas (guardadas no navegador) ----------
+  var TASKS_KEY = 'jarvis_tarefas';
+
+  function loadTasks(){
+    try{
+      var raw = localStorage.getItem(TASKS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  function saveTasks(list){
+    try{ localStorage.setItem(TASKS_KEY, JSON.stringify(list)); }catch(e){}
+  }
+  function addTask(texto){
+    var list = loadTasks();
+    list.push({ id: Date.now(), texto: texto, feita: false, criadoEm: new Date().toISOString() });
+    saveTasks(list);
+    renderTasks();
+  }
+  function toggleTask(id){
+    var list = loadTasks();
+    list.forEach(function(tsk){ if (tsk.id === id) tsk.feita = !tsk.feita; });
+    saveTasks(list);
+    renderTasks();
+  }
+  function removeTask(id){
+    saveTasks(loadTasks().filter(function(tsk){ return tsk.id !== id; }));
+    renderTasks();
+  }
+  function renderTasks(){
+    var list = loadTasks();
+    tasksView.innerHTML = '';
+    if (!list.length){
+      var empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.textContent = 'Nenhuma tarefa ainda. Fala "tarefa: estudar geografia" pra adicionar uma.';
+      tasksView.appendChild(empty);
+      return;
+    }
+    list.forEach(function(tsk){
+      var row = document.createElement('div');
+      row.className = 'task' + (tsk.feita ? ' done' : '');
+      var check = document.createElement('button');
+      check.className = 'check';
+      check.textContent = tsk.feita ? '✓' : '';
+      check.setAttribute('aria-label', 'Marcar tarefa como feita');
+      check.addEventListener('click', function(){ toggleTask(tsk.id); });
+      var txt = document.createElement('div');
+      txt.className = 'txt';
+      txt.textContent = tsk.texto;
+      var del = document.createElement('button');
+      del.className = 'del';
+      del.textContent = '✕';
+      del.setAttribute('aria-label', 'Apagar tarefa');
+      del.addEventListener('click', function(){ removeTask(tsk.id); });
+      row.appendChild(check);
+      row.appendChild(txt);
+      row.appendChild(del);
+      tasksView.appendChild(row);
+    });
+  }
+  renderTasks();
+
+  function extrairTarefa(fala){
+    var padroes = [
+      /(?:adiciona(?:r)?\s+)?(?:uma\s+)?tarefa(?:\s+nova)?[:\s]+(.+)/i,
+      /nova tarefa[:\s]+(.+)/i
+    ];
+    for (var i = 0; i < padroes.length; i++){
+      var m = fala.match(padroes[i]);
+      if (m && m[1] && m[1].trim().length > 1) return m[1].trim();
+    }
+    return null;
+  }
+
+  // ---------- timer ----------
+  var TIMER_KEY = 'jarvis_timer_fim';
+  var timerInterval = null;
+  var timerPill = document.getElementById('timerPill');
+  var timerText = document.getElementById('timerText');
+  var timerCancelBtn = document.getElementById('timerCancel');
+
+  function formatarMMSS(segundosTotais){
+    var m = Math.floor(segundosTotais / 60);
+    var s = segundosTotais % 60;
+    return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  }
+
+  function pararTimerVisual(){
+    if (timerInterval){ clearInterval(timerInterval); timerInterval = null; }
+    timerPill.classList.remove('active');
+    core.classList.remove('alert');
+  }
+
+  function cancelarTimer(){
+    try{ localStorage.removeItem(TIMER_KEY); }catch(e){}
+    pararTimerVisual();
+  }
+
+  function timerTerminou(){
+    pararTimerVisual();
+    try{ localStorage.removeItem(TIMER_KEY); }catch(e){}
+    core.classList.add('alert');
+    if (navigator.vibrate){ try{ navigator.vibrate([300,150,300,150,300]); }catch(e){} }
+    falar('Seu timer acabou!');
+    setTimeout(function(){ core.classList.remove('alert'); }, 4000);
+  }
+
+  function atualizarTimerDisplay(fimMs){
+    var restanteMs = fimMs - Date.now();
+    if (restanteMs <= 0){ timerTerminou(); return; }
+    timerPill.classList.add('active');
+    timerText.textContent = formatarMMSS(Math.ceil(restanteMs / 1000));
+  }
+
+  function iniciarTimer(segundos){
+    var fim = Date.now() + segundos * 1000;
+    try{ localStorage.setItem(TIMER_KEY, String(fim)); }catch(e){}
+    if (timerInterval) clearInterval(timerInterval);
+    atualizarTimerDisplay(fim);
+    timerInterval = setInterval(function(){ atualizarTimerDisplay(fim); }, 1000);
+  }
+
+  timerCancelBtn.addEventListener('click', function(){
+    cancelarTimer();
+    falar('Timer cancelado.');
+  });
+
+  // retoma um timer que já estava rodando (ex: se a página foi recarregada)
+  (function retomarTimer(){
+    try{
+      var fimSalvo = parseInt(localStorage.getItem(TIMER_KEY), 10);
+      if (fimSalvo && fimSalvo > Date.now()){
+        if (timerInterval) clearInterval(timerInterval);
+        atualizarTimerDisplay(fimSalvo);
+        timerInterval = setInterval(function(){ atualizarTimerDisplay(fimSalvo); }, 1000);
+      }
+    }catch(e){}
+  })();
+
+  function extrairTimer(fala){
+    var m = fala.match(/timer.*?(\d+)\s*(minutos?|min|segundos?|seg)\b/i);
+    if (!m) return null;
+    var valor = parseInt(m[1], 10);
+    var unidade = m[2].toLowerCase();
+    var segundos = (unidade.indexOf('min') === 0) ? valor * 60 : valor;
+    return segundos;
+  }
+
   // ---------- entender o que foi falado ----------
   function extrairLembrete(fala){
     var padroes = [
@@ -401,6 +586,38 @@ body{
 
   function responderA(fala){
     var t = fala.toLowerCase();
+
+    if (t.indexOf('cancela') !== -1 && t.indexOf('timer') !== -1){
+      cancelarTimer();
+      return 'Timer cancelado.';
+    }
+
+    var segundosTimer = extrairTimer(fala);
+    if (segundosTimer){
+      iniciarTimer(segundosTimer);
+      var minutos = Math.round(segundosTimer / 60);
+      return 'Timer de ' + (segundosTimer < 60 ? (segundosTimer + ' segundos') : (minutos + ' minuto' + (minutos === 1 ? '' : 's'))) + ' iniciado.';
+    }
+
+    if (t.indexOf('apaga') !== -1 && t.indexOf('tarefa') !== -1){
+      var listT = loadTasks();
+      if (!listT.length) return 'Você não tem tarefas salvas.';
+      saveTasks([]);
+      renderTasks();
+      return 'Apaguei todas as suas tarefas.';
+    }
+
+    if ((t.indexOf('minhas tarefas') !== -1) || (t.indexOf('lista') !== -1 && t.indexOf('tarefa') !== -1)){
+      var listT2 = loadTasks().filter(function(tsk){ return !tsk.feita; });
+      if (!listT2.length) return 'Você não tem tarefas pendentes.';
+      return 'Suas tarefas: ' + listT2.slice(0, 5).map(function(tsk){ return tsk.texto; }).join('; ') + '.';
+    }
+
+    var tarefaTexto = extrairTarefa(fala);
+    if (tarefaTexto){
+      addTask(tarefaTexto);
+      return 'Tarefa adicionada: ' + tarefaTexto + '.';
+    }
 
     if (t.indexOf('apaga') !== -1 && (t.indexOf('gasto') !== -1 || t.indexOf('finança') !== -1)){
       var listG = loadGastos();
@@ -460,7 +677,7 @@ body{
     if (t.indexOf('obrigad') !== -1){
       return 'De nada. Estou aqui se precisar.';
     }
-    return 'Ainda estou aprendendo a responder isso. Mas já posso guardar lembretes ("lembra de...") e gastos ("gastei 20 reais com lanche").';
+    return 'Ainda estou aprendendo a responder isso. Mas já posso guardar lembretes, gastos, tarefas ("tarefa: ...") e iniciar um timer ("timer de 10 minutos").';
   }
 
   // ---------- fala (texto -> voz) ----------
