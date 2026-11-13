@@ -124,6 +124,25 @@ body{
   padding:4px 0 4px 6px;cursor:pointer;flex-shrink:0;
 }
 
+.cart-item{
+  display:flex;align-items:center;gap:10px;
+  background:var(--panel);border:1px solid var(--border);border-radius:12px;
+  padding:12px 14px;
+}
+.cart-item .check{
+  width:22px;height:22px;border-radius:50%;border:2px solid var(--accent-dim);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:none;color:var(--accent2);font-size:13px;cursor:pointer;padding:0;
+}
+.cart-item.done .check{background:var(--accent-dim);border-color:var(--accent2)}
+.cart-item .txt{flex:1;font-size:15px;line-height:1.3;min-width:0}
+.cart-item.done .txt{color:var(--text-dim);text-decoration:line-through}
+.cart-item .valor{font-size:14px;color:var(--text-dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+.cart-item .del{
+  background:none;border:none;color:var(--danger);font-size:18px;line-height:1;
+  padding:4px 0 4px 6px;cursor:pointer;flex-shrink:0;
+}
+
 .timer-pill{
   display:none;align-items:center;gap:8px;align-self:center;
   background:var(--panel);border:1px solid var(--accent-dim);border-radius:999px;
@@ -199,6 +218,7 @@ body{
     <div class="tab active" data-tab="chat">Conversa</div>
     <div class="tab" data-tab="reminders">Lembretes</div>
     <div class="tab" data-tab="expenses">Gastos</div>
+    <div class="tab" data-tab="cart">Carrinho</div>
     <div class="tab" data-tab="tasks">Tarefas</div>
     <div class="tab" data-tab="notes">Notas</div>
   </div>
@@ -208,6 +228,8 @@ body{
   <div class="view" id="view-reminders"></div>
 
   <div class="view" id="view-expenses"></div>
+
+  <div class="view" id="view-cart"></div>
 
   <div class="view" id="view-tasks"></div>
 
@@ -241,10 +263,11 @@ body{
   var expensesView = document.getElementById('view-expenses');
   var tasksView = document.getElementById('view-tasks');
   var notesView = document.getElementById('view-notes');
+  var cartView = document.getElementById('view-cart');
   var statusDot = document.getElementById('statusDot');
   var statusText = document.getElementById('statusText');
   var tabs = document.querySelectorAll('.tab');
-  var views = { chat: chatView, reminders: remindersView, expenses: expensesView, tasks: tasksView, notes: notesView };
+  var views = { chat: chatView, reminders: remindersView, expenses: expensesView, cart: cartView, tasks: tasksView, notes: notesView };
 
   tabs.forEach(function(tab){
     tab.addEventListener('click', function(){
@@ -429,6 +452,114 @@ body{
       return { valor: paraNumero(m2[2]), descricao: (m2[1] || '').trim() };
     }
     return null;
+  }
+
+  // ---------- carrinho de compras (guardado no navegador) ----------
+  var CARRINHO_KEY = 'jarvis_carrinho';
+
+  function loadCarrinho(){
+    try{
+      var raw = localStorage.getItem(CARRINHO_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  function saveCarrinho(list){
+    try{ localStorage.setItem(CARRINHO_KEY, JSON.stringify(list)); }catch(e){}
+  }
+  function addCarrinhoItem(texto, valor){
+    var list = loadCarrinho();
+    list.unshift({ id: Date.now(), texto: texto, valor: (typeof valor === 'number' && !isNaN(valor)) ? valor : null, comprado: false, criadoEm: new Date().toISOString() });
+    saveCarrinho(list);
+    renderCarrinho();
+  }
+  function toggleCarrinhoItem(id){
+    var list = loadCarrinho();
+    list.forEach(function(it){ if (it.id === id) it.comprado = !it.comprado; });
+    saveCarrinho(list);
+    renderCarrinho();
+  }
+  function removeCarrinhoItem(id){
+    saveCarrinho(loadCarrinho().filter(function(it){ return it.id !== id; }));
+    renderCarrinho();
+  }
+  function renderCarrinho(){
+    var list = loadCarrinho();
+    cartView.innerHTML = '';
+
+    var totalPendente = list.reduce(function(soma, it){ return soma + (it.comprado ? 0 : (it.valor || 0)); }, 0);
+    var totalCard = document.createElement('div');
+    totalCard.className = 'total-card';
+    var label = document.createElement('span');
+    label.className = 'label';
+    label.textContent = 'Total do carrinho';
+    var value = document.createElement('span');
+    value.className = 'value';
+    value.textContent = formatarReais(totalPendente);
+    totalCard.appendChild(label);
+    totalCard.appendChild(value);
+    cartView.appendChild(totalCard);
+
+    if (!list.length){
+      var empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.textContent = 'Carrinho vazio. Fala "carrinho: ESP32 por 40 reais" pra adicionar um item.';
+      cartView.appendChild(empty);
+      return;
+    }
+    list.forEach(function(it){
+      var row = document.createElement('div');
+      row.className = 'cart-item' + (it.comprado ? ' done' : '');
+      var check = document.createElement('button');
+      check.className = 'check';
+      check.textContent = it.comprado ? '✓' : '';
+      check.setAttribute('aria-label', 'Marcar item como comprado');
+      check.addEventListener('click', function(){ toggleCarrinhoItem(it.id); });
+      var txt = document.createElement('div');
+      txt.className = 'txt';
+      txt.textContent = it.texto;
+      var row2 = document.createElement('div');
+      row2.style.display = 'flex';
+      row2.style.alignItems = 'center';
+      row2.style.gap = '10px';
+      if (it.valor !== null){
+        var valorEl = document.createElement('span');
+        valorEl.className = 'valor';
+        valorEl.textContent = formatarReais(it.valor);
+        row2.appendChild(valorEl);
+      }
+      var del = document.createElement('button');
+      del.className = 'del';
+      del.textContent = '✕';
+      del.setAttribute('aria-label', 'Remover do carrinho');
+      del.addEventListener('click', function(){ removeCarrinhoItem(it.id); });
+      row2.appendChild(del);
+      row.appendChild(check);
+      row.appendChild(txt);
+      row.appendChild(row2);
+      cartView.appendChild(row);
+    });
+  }
+  renderCarrinho();
+
+  function extrairCarrinho(fala){
+    var texto = null;
+    var padroes = [
+      /carrinho[:\s]+(.+)/i,
+      /(?:coloca|adiciona|p[oõ]e)(?:r)?\s+(?:no|ao)\s+carrinho\s+(.+)/i,
+      /adiciona\s+(.+?)\s+(?:no|ao)\s+carrinho/i
+    ];
+    for (var i = 0; i < padroes.length; i++){
+      var m = fala.match(padroes[i]);
+      if (m && m[1] && m[1].trim().length > 1){ texto = m[1].trim(); break; }
+    }
+    if (!texto) return null;
+    var valor = null;
+    var mv = texto.match(/por\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?)?/i);
+    if (mv){
+      valor = paraNumero(mv[1]);
+      texto = texto.replace(mv[0], '').trim();
+    }
+    return { texto: texto, valor: valor };
   }
 
   // ---------- tarefas (guardadas no navegador) ----------
@@ -771,6 +902,35 @@ body{
     if (gasto && !isNaN(gasto.valor)){
       addGasto(gasto.valor, gasto.descricao);
       return 'Anotei: ' + formatarReais(gasto.valor) + (gasto.descricao ? (' com ' + gasto.descricao) : '') + '.';
+    }
+
+    if (t.indexOf('apaga') !== -1 && t.indexOf('carrinho') !== -1){
+      var listC = loadCarrinho();
+      if (!listC.length) return 'Seu carrinho já está vazio.';
+      saveCarrinho([]);
+      renderCarrinho();
+      return 'Esvaziei o carrinho.';
+    }
+
+    if ((t.indexOf('meu carrinho') !== -1) || (t.indexOf('lista') !== -1 && t.indexOf('carrinho') !== -1)){
+      var listC2 = loadCarrinho().filter(function(it){ return !it.comprado; });
+      if (!listC2.length) return 'Seu carrinho está vazio.';
+      return 'No carrinho: ' + listC2.slice(0, 5).map(function(it){ return it.texto; }).join('; ') + '.';
+    }
+
+    if (t.indexOf('carrinho') !== -1 && (t.indexOf('quanto') !== -1 || t.indexOf('total') !== -1)){
+      var listC3 = loadCarrinho();
+      var totalC = listC3.reduce(function(soma, it){ return soma + (it.comprado ? 0 : (it.valor || 0)); }, 0);
+      return listC3.length ? ('O carrinho está em ' + formatarReais(totalC) + ' no total.') : 'Seu carrinho está vazio.';
+    }
+
+    var itemCarrinho = extrairCarrinho(fala);
+    if (itemCarrinho){
+      addCarrinhoItem(itemCarrinho.texto, itemCarrinho.valor);
+      return escolher([
+        'Coloquei no carrinho: ' + itemCarrinho.texto + (itemCarrinho.valor !== null ? (' (' + formatarReais(itemCarrinho.valor) + ')') : '') + '.',
+        'Adicionei ao carrinho: ' + itemCarrinho.texto + '.'
+      ]);
     }
 
     if (t.indexOf('apaga') !== -1 && t.indexOf('lembrete') !== -1){
