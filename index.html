@@ -200,6 +200,7 @@ body{
     <div class="tab" data-tab="reminders">Lembretes</div>
     <div class="tab" data-tab="expenses">Gastos</div>
     <div class="tab" data-tab="tasks">Tarefas</div>
+    <div class="tab" data-tab="notes">Notas</div>
   </div>
 
   <div class="view active" id="view-chat"></div>
@@ -209,6 +210,8 @@ body{
   <div class="view" id="view-expenses"></div>
 
   <div class="view" id="view-tasks"></div>
+
+  <div class="view" id="view-notes"></div>
 </div>
 
 <div class="controls">
@@ -237,10 +240,11 @@ body{
   var remindersView = document.getElementById('view-reminders');
   var expensesView = document.getElementById('view-expenses');
   var tasksView = document.getElementById('view-tasks');
+  var notesView = document.getElementById('view-notes');
   var statusDot = document.getElementById('statusDot');
   var statusText = document.getElementById('statusText');
   var tabs = document.querySelectorAll('.tab');
-  var views = { chat: chatView, reminders: remindersView, expenses: expensesView, tasks: tasksView };
+  var views = { chat: chatView, reminders: remindersView, expenses: expensesView, tasks: tasksView, notes: notesView };
 
   tabs.forEach(function(tab){
     tab.addEventListener('click', function(){
@@ -267,6 +271,10 @@ body{
   function setStatus(text, live){
     statusText.textContent = text;
     statusDot.classList.toggle('live', !!live);
+  }
+
+  function escolher(lista){
+    return lista[Math.floor(Math.random() * lista.length)];
   }
 
   // ---------- lembretes (guardados no navegador) ----------
@@ -407,7 +415,8 @@ body{
   function extrairGasto(fala){
     var padroesValorPrimeiro = [
       /gast(?:ei|o)\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?)?\s*(?:com|em|no|na|de)?\s*(.*)/i,
-      /pagu(?:ei)\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?)?\s*(?:por|com|em|no|na)?\s*(.*)/i
+      /pagu(?:ei)\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?)?\s*(?:por|com|em|no|na)?\s*(.*)/i,
+      /(?:novo gasto|anota(?:r)? um gasto|coloca(?:r)? um gasto)(?:\s+de)?\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?)?\s*(?:com|em|no|na|de)?\s*(.*)/i
     ];
     for (var i = 0; i < padroesValorPrimeiro.length; i++){
       var m = fala.match(padroesValorPrimeiro[i]);
@@ -485,9 +494,71 @@ body{
   renderTasks();
 
   function extrairTarefa(fala){
+    var m = fala.match(/tarefa(?:\s+nova)?(?:\s*:|\s+de|\s+para)?\s*(.+)/i);
+    if (m && m[1] && m[1].trim().length > 1) return m[1].trim();
+    return null;
+  }
+
+  // ---------- notas (guardadas no navegador) ----------
+  var NOTAS_KEY = 'jarvis_notas';
+
+  function loadNotas(){
+    try{
+      var raw = localStorage.getItem(NOTAS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  function saveNotas(list){
+    try{ localStorage.setItem(NOTAS_KEY, JSON.stringify(list)); }catch(e){}
+  }
+  function addNota(texto){
+    var list = loadNotas();
+    list.unshift({ id: Date.now(), texto: texto, criadoEm: new Date().toISOString() });
+    saveNotas(list);
+    renderNotas();
+  }
+  function removeNota(id){
+    var list = loadNotas().filter(function(n){ return n.id !== id; });
+    saveNotas(list);
+    renderNotas();
+  }
+  function renderNotas(){
+    var list = loadNotas();
+    notesView.innerHTML = '';
+    if (!list.length){
+      var empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.textContent = 'Nenhuma nota ainda. Fala "nota: ideia para o projeto" pra criar uma.';
+      notesView.appendChild(empty);
+      return;
+    }
+    list.forEach(function(n){
+      var row = document.createElement('div');
+      row.className = 'reminder';
+      var txt = document.createElement('div');
+      txt.className = 'txt';
+      txt.textContent = n.texto;
+      var when = document.createElement('span');
+      when.className = 'when';
+      when.textContent = new Date(n.criadoEm).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+      txt.appendChild(when);
+      var del = document.createElement('button');
+      del.className = 'del';
+      del.textContent = '✕';
+      del.setAttribute('aria-label', 'Apagar nota');
+      del.addEventListener('click', function(){ removeNota(n.id); });
+      row.appendChild(txt);
+      row.appendChild(del);
+      notesView.appendChild(row);
+    });
+  }
+  renderNotas();
+
+  function extrairNota(fala){
     var padroes = [
-      /(?:adiciona(?:r)?\s+)?(?:uma\s+)?tarefa(?:\s+nova)?[:\s]+(.+)/i,
-      /nova tarefa[:\s]+(.+)/i
+      /nota[:\s]+(.+)/i,
+      /cri(?:a|ar) uma nota(?: sobre| de)?[:\s]*(.+)/i,
+      /nova nota[:\s]*(.+)/i
     ];
     for (var i = 0; i < padroes.length; i++){
       var m = fala.match(padroes[i]);
@@ -562,7 +633,7 @@ body{
   })();
 
   function extrairTimer(fala){
-    var m = fala.match(/timer.*?(\d+)\s*(minutos?|min|segundos?|seg)\b/i);
+    var m = fala.match(/(?:timer|cron[oô]metro).*?(\d+)\s*(minutos?|min|segundos?|seg)\b/i);
     if (!m) return null;
     var valor = parseInt(m[1], 10);
     var unidade = m[2].toLowerCase();
@@ -573,7 +644,7 @@ body{
   // ---------- entender o que foi falado ----------
   function extrairLembrete(fala){
     var padroes = [
-      /lembr(?:a|ete)(?: de| que)?\s+(.+)/i,
+      /lembr(?:a|ete)(?:\s+nov[ao])?(?:\s*:|\s+de|\s+que|\s+para)?\s*(.+)/i,
       /anota (?:que|a[ií])?\s*(.+)/i,
       /n[aã]o deixa eu esquecer (?:de|que)?\s*(.+)/i
     ];
@@ -584,19 +655,62 @@ body{
     return null;
   }
 
+  // ---------- piadas, curiosidades e contas simples ----------
+  var PIADAS = [
+    'Por que o livro de matemática ficou triste? Porque tinha muitos problemas.',
+    'O que o zero disse para o oito? Que cinto bonito!',
+    'Por que o computador foi ao médico? Porque estava com vírus.',
+    'O que um oceano disse para o outro? Nada, eles só deram onda.',
+    'Por que o esqueleto não luta com ninguém? Porque ele não tem estômago para isso.',
+    'O que o tomate foi fazer no banco? Tirar extrato.',
+    'Por que o livro de geografia nunca se perde? Porque ele sempre tem um mapa.'
+  ];
+  var CURIOSIDADES = [
+    'O coração de uma baleia azul é tão grande que uma criança poderia nadar dentro das suas artérias.',
+    'O mel nunca estraga — arqueólogos já encontraram potes de mel comestível com mais de 3 mil anos.',
+    'Um raio é cerca de cinco vezes mais quente que a superfície do Sol.',
+    'Os polvos têm três corações e sangue azul.',
+    'A Torre Eiffel pode crescer até 15 centímetros no verão por causa do calor.',
+    'Formigas não têm pulmões, elas respiram pela pele.',
+    'Vênus é o único planeta do sistema solar que gira no sentido contrário ao dos outros.'
+  ];
+
+  function extrairConta(fala){
+    var t = fala.toLowerCase();
+    if (t.indexOf('quanto') === -1) return null;
+    var expr = t
+      .replace(/mais/g, '+')
+      .replace(/menos/g, '-')
+      .replace(/multiplicado por|vezes/g, '*')
+      .replace(/dividido por/g, '/');
+    var m = expr.match(/(-?\d+(?:[.,]\d+)?)\s*([+\-*/])\s*(-?\d+(?:[.,]\d+)?)/);
+    if (!m) return null;
+    var a = parseFloat(m[1].replace(',', '.'));
+    var op = m[2];
+    var b = parseFloat(m[3].replace(',', '.'));
+    var resultado = null;
+    if (op === '+') resultado = a + b;
+    else if (op === '-') resultado = a - b;
+    else if (op === '*') resultado = a * b;
+    else if (op === '/' && b !== 0) resultado = a / b;
+    if (resultado === null || isNaN(resultado)) return null;
+    return Math.round(resultado * 100) / 100;
+  }
+
   function responderA(fala){
     var t = fala.toLowerCase();
 
-    if (t.indexOf('cancela') !== -1 && t.indexOf('timer') !== -1){
+    if (t.indexOf('cancela') !== -1 && (t.indexOf('timer') !== -1 || t.indexOf('cron') !== -1)){
       cancelarTimer();
-      return 'Timer cancelado.';
+      return escolher(['Timer cancelado.', 'Pronto, cancelei o timer.', 'Cancelei o timer para você.']);
     }
 
     var segundosTimer = extrairTimer(fala);
     if (segundosTimer){
       iniciarTimer(segundosTimer);
       var minutos = Math.round(segundosTimer / 60);
-      return 'Timer de ' + (segundosTimer < 60 ? (segundosTimer + ' segundos') : (minutos + ' minuto' + (minutos === 1 ? '' : 's'))) + ' iniciado.';
+      var duracaoTxt = segundosTimer < 60 ? (segundosTimer + ' segundos') : (minutos + ' minuto' + (minutos === 1 ? '' : 's'));
+      return escolher(['Timer de ' + duracaoTxt + ' iniciado.', 'Pronto, timer de ' + duracaoTxt + ' rodando.', duracaoTxt.charAt(0).toUpperCase() + duracaoTxt.slice(1) + ', contando a partir de agora.']);
     }
 
     if (t.indexOf('apaga') !== -1 && t.indexOf('tarefa') !== -1){
@@ -616,7 +730,27 @@ body{
     var tarefaTexto = extrairTarefa(fala);
     if (tarefaTexto){
       addTask(tarefaTexto);
-      return 'Tarefa adicionada: ' + tarefaTexto + '.';
+      return escolher(['Tarefa adicionada: ' + tarefaTexto + '.', 'Anotei a tarefa: ' + tarefaTexto + '.', 'Tarefa na lista: ' + tarefaTexto + '.']);
+    }
+
+    if (t.indexOf('apaga') !== -1 && t.indexOf('nota') !== -1 && t.indexOf('tarefa') === -1 && t.indexOf('lembrete') === -1){
+      var listN = loadNotas();
+      if (!listN.length) return 'Você não tem notas salvas.';
+      saveNotas([]);
+      renderNotas();
+      return 'Apaguei todas as suas notas.';
+    }
+
+    if ((t.indexOf('minhas notas') !== -1) || (t.indexOf('lista') !== -1 && t.indexOf('nota') !== -1)){
+      var listN2 = loadNotas();
+      if (!listN2.length) return 'Você não tem nenhuma nota salva.';
+      return 'Suas notas: ' + listN2.slice(0, 5).map(function(n){ return n.texto; }).join('; ') + '.';
+    }
+
+    var notaTexto = extrairNota(fala);
+    if (notaTexto){
+      addNota(notaTexto);
+      return escolher(['Nota salva: ' + notaTexto + '.', 'Anotei: ' + notaTexto + '.', 'Nota registrada: ' + notaTexto + '.']);
     }
 
     if (t.indexOf('apaga') !== -1 && (t.indexOf('gasto') !== -1 || t.indexOf('finança') !== -1)){
@@ -660,6 +794,17 @@ body{
       return 'Lembrete anotado: ' + lembreteTexto + '.';
     }
 
+    if (t.indexOf('piada') !== -1){
+      return escolher(PIADAS);
+    }
+    if (t.indexOf('curiosidade') !== -1){
+      return escolher(CURIOSIDADES);
+    }
+    var conta = extrairConta(fala);
+    if (conta !== null){
+      return 'O resultado é ' + String(conta).replace('.', ',') + '.';
+    }
+
     if (t.indexOf('hora') !== -1){
       var d = new Date();
       return 'São ' + d.getHours() + ' horas e ' + String(d.getMinutes()).padStart(2,'0') + '.';
@@ -670,20 +815,20 @@ body{
     }
     // ---------- cumprimentos e expressões básicas ----------
     if (t.indexOf('bom dia') !== -1){
-      return 'Bom dia, Francisco! Como posso ajudar?';
+      return escolher(['Bom dia, Francisco! Como posso ajudar?', 'Bom dia! Pronto para o que vier.', 'Bom dia! Me diz o que você precisa.']);
     }
     if (t.indexOf('boa tarde') !== -1){
-      return 'Boa tarde, Francisco! Como posso ajudar?';
+      return escolher(['Boa tarde, Francisco! Como posso ajudar?', 'Boa tarde! Em que posso ser útil?']);
     }
     if (t.indexOf('boa noite') !== -1){
       var horaAtual = new Date().getHours();
-      return (horaAtual < 11) ? 'Boa noite! Ainda não amanheceu direito por aqui — mas tudo bem, como posso ajudar?' : 'Boa noite, Francisco! Durma bem, qualquer coisa estou por aqui.';
+      return (horaAtual < 11) ? 'Boa noite! Ainda não amanheceu direito por aqui — mas tudo bem, como posso ajudar?' : escolher(['Boa noite, Francisco! Durma bem, qualquer coisa estou por aqui.', 'Boa noite! Precisa de mais alguma coisa antes de dormir?']);
     }
     if (t.indexOf('oi') !== -1 || t.indexOf('olá') !== -1 || t.indexOf('ola') !== -1 || t.indexOf('e aí') !== -1 || t.indexOf('eai') !== -1 || t.indexOf('salve') !== -1){
-      return 'Oi, Francisco! Como posso ajudar?';
+      return escolher(['Oi, Francisco! Como posso ajudar?', 'Oi! Pode falar.', 'E aí, Francisco! No que posso ajudar?']);
     }
     if ((t.indexOf('tudo bem') !== -1) || (t.indexOf('como você') !== -1 || t.indexOf('como voce') !== -1) || t.indexOf('como vai') !== -1){
-      return 'Tudo certo por aqui! E com você, tá tudo bem?';
+      return escolher(['Tudo certo por aqui! E com você, tá tudo bem?', 'Funcionando normalmente! E você, como está?']);
     }
     if (t.indexOf('por favor') !== -1 && t.trim().split(' ').length <= 3){
       return 'Pode falar, estou ouvindo.';
@@ -698,15 +843,18 @@ body{
       return 'Obrigado, Francisco! Muito gentil da sua parte.';
     }
     if (t.indexOf('tchau') !== -1 || t.indexOf('até mais') !== -1 || t.indexOf('ate mais') !== -1 || t.indexOf('até logo') !== -1 || t.indexOf('falou') !== -1){
-      return 'Até mais, Francisco! Qualquer coisa é só chamar.';
+      return escolher(['Até mais, Francisco! Qualquer coisa é só chamar.', 'Falou! Estou por aqui se precisar.']);
     }
     if (t.indexOf('seu nome') !== -1 || t.indexOf('quem é você') !== -1 || t.indexOf('quem e voce') !== -1){
       return 'Eu sou o Jarvis, seu assistente pessoal.';
     }
     if (t.indexOf('obrigad') !== -1){
-      return 'De nada. Estou aqui se precisar.';
+      return escolher(['De nada. Estou aqui se precisar.', 'Disponha! Qualquer coisa é só chamar.']);
     }
-    return 'Ainda estou aprendendo a responder isso. Mas já posso guardar lembretes, gastos, tarefas ("tarefa: ...") e iniciar um timer ("timer de 10 minutos").';
+    return escolher([
+      'Ainda estou aprendendo a responder isso. Mas já posso guardar lembretes, gastos, tarefas, notas ("nota: ...") e iniciar um timer ("timer de 10 minutos").',
+      'Essa eu ainda não sei. Mas posso guardar lembretes, tarefas, gastos e notas, contar uma piada ou uma curiosidade, e até fazer contas simples.'
+    ]);
   }
 
   // ---------- fala (texto -> voz) ----------
