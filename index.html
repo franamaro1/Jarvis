@@ -460,10 +460,35 @@ body{
   // ---------- carrinho de compras (guardado no navegador) ----------
   var CARRINHO_KEY = 'jarvis_carrinho';
 
+  function materiaisPadraoPulseira(){
+    var itens = [
+      { texto: 'ESP32 DevKit (ou ESP32-C3 mini, pra ficar menor)', valor: 40.90 },
+      { texto: 'Barra de LED WS2812B (8 LEDs)', valor: 19.04 },
+      { texto: 'Bateria LiPo pequena (3.7V)', valor: null },
+      { texto: 'Módulo carregador TP4056', valor: null },
+      { texto: 'Protoboard pequena + jumpers', valor: null },
+      { texto: 'Resistor (330-470 ohm)', valor: null },
+      { texto: 'Capacitor (470µF)', valor: null },
+      { texto: 'Fios flexíveis finos', valor: null },
+      { texto: 'Interruptor liga/desliga pequeno', valor: null },
+      { texto: 'Botão táctil (push button)', valor: null },
+      { texto: 'Material da pulseira (elástico, tecido ou caixinha 3D)', valor: null }
+    ];
+    var agora = Date.now();
+    return itens.map(function(it, i){
+      return { id: agora + i, texto: it.texto, valor: it.valor, comprado: false, criadoEm: new Date().toISOString() };
+    });
+  }
+
   function loadCarrinho(){
     try{
       var raw = localStorage.getItem(CARRINHO_KEY);
-      return raw ? JSON.parse(raw) : [];
+      if (raw === null){
+        var padrao = materiaisPadraoPulseira();
+        saveCarrinho(padrao);
+        return padrao;
+      }
+      return JSON.parse(raw);
     }catch(e){ return []; }
   }
   function saveCarrinho(list){
