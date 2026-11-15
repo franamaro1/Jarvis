@@ -4,6 +4,17 @@
 <meta charset="utf-8">
 <title>Jarvis</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070b12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Jarvis">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#070b12; --bg2:#0d141f; --panel:#0e1621; --border:#1c2b3d;
@@ -38,22 +49,8 @@ body{
   flex-shrink:0;display:flex;align-items:center;justify-content:center;
   padding:6px 0 2px;position:relative;
 }
-.core{
-  width:min(52vw,220px);height:min(52vw,220px);position:relative;
-}
-.core svg{width:100%;height:100%;display:block}
-.sun{transition:r .2s ease;filter:drop-shadow(0 0 6px var(--accent2)) drop-shadow(0 0 14px var(--accent-dim))}
-.core.listening .sun{animation:pulse 1.1s ease-in-out infinite}
-.core.speaking .sun{animation:pulse .5s ease-in-out infinite}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
-
-.orbit-ring{fill:none;stroke:var(--border);stroke-width:1}
-.orbit-group{transform-origin:100px 100px}
-.orbit-group.o1{animation:spin 6s linear infinite}
-.orbit-group.o2{animation:spin 10s linear infinite}
-.orbit-group.o3{animation:spin 16s linear infinite}
-.orbit-group.o4{animation:spin 24s linear infinite}
-.orbit-group.o5{animation:spin 34s linear infinite}
+.core{position:relative}
+.core svg{width:100%;height:100%;display:block;overflow:visible}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 
 .panel{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:hidden}
@@ -153,8 +150,6 @@ body{
 .timer-pill.active{display:flex}
 .timer-pill .t{font-size:16px;font-weight:600;color:var(--accent2);font-variant-numeric:tabular-nums}
 .timer-pill .cancel{background:none;border:none;color:var(--text-dim);font-size:14px;cursor:pointer}
-.core.alert .sun{animation:pulse .35s ease-in-out infinite}
-
 .controls{
   flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:8px;
   padding:10px 0 max(16px, env(safe-area-inset-bottom,0px));
@@ -181,32 +176,137 @@ body{
   background:var(--panel);border:1px solid var(--accent-dim);color:var(--accent2);
   border-radius:10px;padding:0 16px;font-size:14px;cursor:pointer;
 }
+
+/* ---------- visual tecnológico ---------- */
+body{
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(54,214,255,.10), transparent 60%),
+    linear-gradient(rgba(54,214,255,.035) 1px, transparent 1px) 0 0/100% 28px,
+    linear-gradient(90deg, rgba(54,214,255,.035) 1px, transparent 1px) 0 0/28px 100%,
+    var(--bg);
+}
+.brand{text-shadow:0 0 12px rgba(54,214,255,.55)}
+.brand small{font-size:9px;letter-spacing:3px;color:var(--text-dim);display:block;margin-top:2px;text-shadow:none}
+.tab{font-family:'Orbitron',Arial,sans-serif;font-size:10px;letter-spacing:1.5px}
+.tab.active{background:linear-gradient(180deg,rgba(54,214,255,.14),rgba(54,214,255,.02));box-shadow:inset 0 -2px 0 var(--accent2)}
+.reminder,.expense,.task,.cart-item,.agenda-item,.total-card,.card{position:relative}
+.reminder::before,.expense::before,.task::before,.cart-item::before,.agenda-item::before,.card::before{
+  content:"";position:absolute;left:-1px;top:-1px;width:10px;height:10px;
+  border-left:2px solid var(--accent);border-top:2px solid var(--accent);border-top-left-radius:12px;opacity:.7;
+}
+
+/* ---------- rosto com expressões ---------- */
+.core{width:min(46vw,200px);height:min(46vw,200px);transition:width .3s,height .3s;cursor:pointer;-webkit-tap-highlight-color:transparent}
+body.modo-terra .core{width:84px;height:84px}
+.hud-ring{fill:none;stroke:var(--accent);stroke-width:1.2;opacity:.55;transform-origin:100px 100px}
+.hud-ring.r1{stroke-dasharray:3 6;animation:spin 30s linear infinite}
+.hud-ring.r2{stroke-dasharray:46 18 8 18;stroke-width:2.4;opacity:.75;animation:spin 14s linear infinite reverse}
+.hud-ring.r3{stroke:var(--accent2);stroke-dasharray:1 3;opacity:.4;animation:spin 50s linear infinite}
+.core.listening .hud-ring.r2{animation-duration:3s;stroke:var(--accent2)}
+.core.speaking .hud-ring.r2{animation-duration:5s}
+.face-plate{fill:rgba(54,214,255,.06);stroke:var(--accent-dim);stroke-width:1.5}
+.core.listening .face-plate{fill:rgba(122,252,214,.10);stroke:var(--accent2)}
+.core.alert .face-plate{animation:alerta .4s ease-in-out infinite}
+@keyframes alerta{50%{fill:rgba(255,93,108,.22)}}
+.feature{transform-box:fill-box;transform-origin:center;transition:transform .28s ease}
+.eye{fill:var(--accent2);filter:drop-shadow(0 0 4px var(--accent2))}
+.blinker{transform-box:fill-box;transform-origin:center;animation:piscar 5.5s infinite}
+@keyframes piscar{0%,95%,100%{transform:scaleY(1)}97%{transform:scaleY(.08)}}
+.brow{stroke:var(--accent);stroke-width:3;stroke-linecap:round;opacity:.9}
+.mouth{fill:none;stroke:var(--accent2);stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 3px var(--accent2))}
+.expr-label{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);font-family:'Orbitron',Arial,sans-serif;white-space:nowrap}
+body.modo-terra .expr-label{display:none}
+
+/* ---------- agenda do dia ---------- */
+.day-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-shrink:0}
+.day-head .d{font-family:'Orbitron',Arial,sans-serif;font-size:13px;letter-spacing:2px;color:var(--accent);text-transform:uppercase}
+.day-head .n{font-size:12px;color:var(--text-dim)}
+.section-t{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-top:6px}
+.agenda-item{
+  display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--border);
+  border-radius:12px;padding:12px 14px;
+}
+.agenda-item .hora{font-family:'Orbitron',Arial,sans-serif;font-size:13px;color:var(--accent2);min-width:48px;font-variant-numeric:tabular-nums}
+.agenda-item .txt{flex:1;font-size:15px;line-height:1.3;min-width:0}
+.agenda-item.done .txt{color:var(--text-dim);text-decoration:line-through}
+.agenda-item.passou .hora{color:var(--text-dim)}
+.agenda-item .check{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent-dim);background:none;color:var(--accent2);font-size:13px;cursor:pointer;padding:0;flex-shrink:0}
+.agenda-item.done .check{background:var(--accent-dim);border-color:var(--accent2)}
+.agenda-item .del,.reminder .del{background:none;border:none;color:var(--danger);font-size:18px;line-height:1;padding:4px 0 4px 6px;cursor:pointer;flex-shrink:0}
+.add-row{display:flex;gap:8px;flex-shrink:0}
+.add-row input{min-width:0;background:var(--panel);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;padding:10px 12px}
+.add-row input[type=text]{flex:1}
+.add-row input[type=time]{width:96px}
+.add-row button{background:var(--panel);border:1px solid var(--accent-dim);color:var(--accent2);border-radius:10px;padding:0 14px;font-size:18px;cursor:pointer}
+.when.alarme{color:var(--accent)}
+
+/* ---------- planeta Terra ---------- */
+#view-earth{padding:0;gap:8px;overflow:hidden}
+.earth-search{display:flex;gap:8px;flex-shrink:0;position:relative}
+.earth-search input{flex:1;min-width:0;background:var(--panel);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;padding:10px 12px}
+.earth-search input:focus{outline:none;border-color:var(--accent-dim)}
+.sugestoes{position:absolute;top:44px;left:0;right:0;z-index:5;background:var(--bg2);border:1px solid var(--accent-dim);border-radius:10px;max-height:220px;overflow-y:auto;display:none}
+.sugestoes.on{display:block}
+.sugestoes div{padding:10px 12px;font-size:14px;border-bottom:1px solid var(--border);cursor:pointer}
+.sugestoes div small{color:var(--text-dim);margin-left:6px}
+.globe-wrap{flex:1;min-height:240px;position:relative;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:radial-gradient(circle at 50% 50%,#0b1c2c,#04070c 70%)}
+.globe-el{position:absolute;inset:0;overflow:hidden}
+.globe-wrap .loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:13px;letter-spacing:2px;text-transform:uppercase;text-align:center;padding:20px}
+.gl-lbl{pointer-events:auto;cursor:pointer;display:flex;align-items:center;gap:4px;transform:translate(-4px,-50%);white-space:nowrap;font-family:Arial,sans-serif}
+.gl-lbl i{width:6px;height:6px;border-radius:50%;background:#7afcd6;box-shadow:0 0 6px #7afcd6;flex-shrink:0}
+.gl-lbl.cap i{background:#ffd479;box-shadow:0 0 6px #ffd479;width:7px;height:7px;transform:rotate(45deg);border-radius:1px}
+.gl-lbl span{font-size:10px;color:#dbe8f5;text-shadow:0 0 3px #000,0 0 6px #000}
+.gl-lbl.cap span{color:#ffd479;font-size:11px}
+.gl-lbl.cidade span{color:#7afcd6}
+.country-card{
+  position:absolute;left:8px;right:8px;bottom:8px;z-index:4;background:rgba(8,14,22,.88);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  border:1px solid var(--accent-dim);border-radius:12px;padding:12px 14px;display:none;max-height:48%;overflow-y:auto
+}
+.country-card.on{display:block}
+.country-card .nm{font-family:'Orbitron',Arial,sans-serif;font-size:15px;color:var(--accent2);letter-spacing:1px;padding-right:28px}
+.country-card .meta{font-size:13px;color:var(--text);margin-top:4px;line-height:1.5}
+.country-card .meta b{color:#ffd479;font-weight:600}
+.country-card .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.country-card .chips button{background:rgba(54,214,255,.08);border:1px solid var(--border);color:var(--text);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer}
+.country-card .x{position:absolute;top:8px;right:10px;background:none;border:none;color:var(--text-dim);font-size:18px;cursor:pointer}
+.legend{position:absolute;top:8px;left:10px;z-index:3;font-size:10px;color:var(--text-dim);letter-spacing:1px;display:flex;gap:10px;pointer-events:none}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#7afcd6}
+.legend i.c{background:#ffd479;transform:rotate(45deg);border-radius:1px}
+
+/* ---------- ajustes ---------- */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.card h3{margin:0;font-family:'Orbitron',Arial,sans-serif;font-size:12px;letter-spacing:2px;color:var(--accent);font-weight:500;text-transform:uppercase}
+.card label{font-size:13px;color:var(--text-dim);display:flex;flex-direction:column;gap:6px}
+.card select,.card input[type=text]{background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;padding:9px 10px;width:100%}
+.card input[type=range]{width:100%;accent-color:var(--accent2)}
+.card .row{display:flex;gap:8px;flex-wrap:wrap}
+.card button{background:var(--bg2);border:1px solid var(--accent-dim);color:var(--accent2);border-radius:8px;padding:9px 14px;font-size:14px;cursor:pointer}
+.card p{margin:0;font-size:12px;color:var(--text-dim);line-height:1.5}
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <div class="brand">JARVIS</div>
+  <div class="brand">JARVIS<small>ASSISTENTE PESSOAL</small></div>
   <div class="status"><span class="status-dot" id="statusDot"></span><span id="statusText">Em espera</span></div>
 </div>
 
 <div class="core-wrap">
-  <div class="core" id="core">
-    <svg viewBox="0 0 200 200">
-      <circle class="orbit-ring" cx="100" cy="100" r="26"/>
-      <circle class="orbit-ring" cx="100" cy="100" r="44"/>
-      <circle class="orbit-ring" cx="100" cy="100" r="62"/>
-      <circle class="orbit-ring" cx="100" cy="100" r="80"/>
-      <circle class="orbit-ring" cx="100" cy="100" r="96"/>
-
-      <circle class="sun" cx="100" cy="100" r="11" fill="var(--accent2)"/>
-
-      <g class="orbit-group o1"><circle cx="126" cy="100" r="2.6" fill="#b9b2a6"/></g>
-      <g class="orbit-group o2"><circle cx="144" cy="100" r="3.4" fill="#e3c08a"/></g>
-      <g class="orbit-group o3"><circle cx="162" cy="100" r="3.6" fill="var(--accent)"/></g>
-      <g class="orbit-group o4"><circle cx="180" cy="100" r="3" fill="#e0775a"/></g>
-      <g class="orbit-group o5"><circle cx="196" cy="100" r="5.2" fill="#d8b98a"/></g>
+  <div class="core" id="core" role="button" aria-label="Rosto do Jarvis">
+    <svg viewBox="0 0 200 200" aria-hidden="true">
+      <circle class="hud-ring r1" cx="100" cy="100" r="96"/>
+      <circle class="hud-ring r2" cx="100" cy="100" r="86"/>
+      <circle class="hud-ring r3" cx="100" cy="100" r="76"/>
+      <circle class="face-plate" cx="100" cy="100" r="64"/>
+      <line class="brow feature" id="browL" x1="72" y1="72" x2="94" y2="72"/>
+      <line class="brow feature" id="browR" x1="106" y1="72" x2="128" y2="72"/>
+      <g class="feature" id="eyeL"><g class="blinker"><ellipse class="eye" cx="83" cy="92" rx="7" ry="10"/></g></g>
+      <g class="feature" id="eyeR"><g class="blinker"><ellipse class="eye" cx="117" cy="92" rx="7" ry="10"/></g></g>
+      <path class="mouth" id="mouth" d="M82 128 Q100 133 118 128"/>
     </svg>
+    <div class="expr-label" id="exprLabel">neutro</div>
   </div>
 </div>
 
@@ -218,14 +318,32 @@ body{
 <div class="panel">
   <div class="tabs">
     <div class="tab active" data-tab="chat">Conversa</div>
+    <div class="tab" data-tab="today">Hoje</div>
+    <div class="tab" data-tab="earth">Terra</div>
     <div class="tab" data-tab="reminders">Lembretes</div>
+    <div class="tab" data-tab="cart">Compras</div>
     <div class="tab" data-tab="expenses">Gastos</div>
-    <div class="tab" data-tab="cart">Carrinho</div>
     <div class="tab" data-tab="tasks">Tarefas</div>
     <div class="tab" data-tab="notes">Notas</div>
+    <div class="tab" data-tab="settings">Ajustes</div>
   </div>
 
   <div class="view active" id="view-chat"></div>
+
+  <div class="view" id="view-today"></div>
+
+  <div class="view" id="view-earth">
+    <div class="earth-search">
+      <input type="text" id="earthInput" placeholder="Buscar país ou cidade..." autocomplete="off">
+      <div class="sugestoes" id="earthSug"></div>
+    </div>
+    <div class="globe-wrap zoom-longe" id="globeWrap">
+      <div class="legend"><span><i class="c"></i>capital</span><span><i></i>cidade</span></div>
+      <div class="globe-el" id="globeEl"></div>
+      <div class="loading" id="globeLoading">Carregando planeta...</div>
+      <div class="country-card" id="countryCard"></div>
+    </div>
+  </div>
 
   <div class="view" id="view-reminders"></div>
 
@@ -236,6 +354,8 @@ body{
   <div class="view" id="view-tasks"></div>
 
   <div class="view" id="view-notes"></div>
+
+  <div class="view" id="view-settings"></div>
 </div>
 
 <div class="controls">
@@ -254,6 +374,7 @@ body{
   </form>
 </div>
 
+<script src="data/geo.js"></script>
 <script>
 (function(){
   "use strict";
@@ -269,7 +390,7 @@ body{
   var statusDot = document.getElementById('statusDot');
   var statusText = document.getElementById('statusText');
   var tabs = document.querySelectorAll('.tab');
-  var views = { chat: chatView, reminders: remindersView, expenses: expensesView, cart: cartView, tasks: tasksView, notes: notesView };
+  var views = { chat: chatView, today: document.getElementById('view-today'), earth: document.getElementById('view-earth'), reminders: remindersView, expenses: expensesView, cart: cartView, tasks: tasksView, notes: notesView, settings: document.getElementById('view-settings') };
 
   tabs.forEach(function(tab){
     tab.addEventListener('click', function(){
@@ -278,6 +399,12 @@ body{
       Object.keys(views).forEach(function(key){
         views[key].classList.toggle('active', tab.dataset.tab === key);
       });
+      var aba = tab.dataset.tab;
+      document.body.classList.toggle('modo-terra', aba === 'earth');
+      if (aba === 'earth'){ iniciarGlobo(); setTimeout(ajustarTamanhoGlobo, 350); }
+      if (aba === 'today') renderAgenda();
+      if (aba === 'settings') renderAjustes();
+      tab.scrollIntoView({ block:'nearest', inline:'center', behavior:'smooth' });
     });
   });
 
@@ -314,9 +441,9 @@ body{
   function saveReminders(list){
     try{ localStorage.setItem(REM_KEY, JSON.stringify(list)); }catch(e){}
   }
-  function addReminder(texto){
+  function addReminder(texto, quando){
     var list = loadReminders();
-    list.unshift({ id: Date.now(), texto: texto, criadoEm: new Date().toISOString() });
+    list.unshift({ id: Date.now(), texto: texto, criadoEm: new Date().toISOString(), data: (quando && quando.hora) ? quando.data : null, hora: (quando && quando.hora) || null, avisado: false });
     saveReminders(list);
     renderReminders();
   }
@@ -331,7 +458,7 @@ body{
     if (!list.length){
       var empty = document.createElement('div');
       empty.className = 'empty';
-      empty.textContent = 'Nenhum lembrete ainda. Fala "Jarvis, lembra de..." pra criar um.';
+      empty.textContent = 'Nenhum lembrete ainda. Fala "Jarvis, me lembra de ligar pra mãe amanhã às 10h".';
       remindersView.appendChild(empty);
       return;
     }
@@ -343,7 +470,12 @@ body{
       txt.textContent = r.texto;
       var when = document.createElement('span');
       when.className = 'when';
-      when.textContent = new Date(r.criadoEm).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+      if (r.hora){
+        when.className = 'when alarme';
+        when.textContent = (r.avisado ? '✓ avisado · ' : '⏰ ') + descreverQuando(r.data, r.hora);
+      } else {
+        when.textContent = new Date(r.criadoEm).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+      }
       txt.appendChild(when);
       var del = document.createElement('button');
       del.className = 'del';
@@ -877,6 +1009,9 @@ body{
   function responderA(fala){
     var t = fala.toLowerCase();
 
+    var rAgenda = responderAgenda(fala); if (rAgenda) return rAgenda;
+    var rGeo = responderGeografia(fala); if (rGeo) return rGeo;
+
     if (t.indexOf('cancela') !== -1 && (t.indexOf('timer') !== -1 || t.indexOf('cron') !== -1)){
       cancelarTimer();
       return escolher(['Timer cancelado.', 'Pronto, cancelei o timer.', 'Cancelei o timer para você.']);
@@ -996,9 +1131,17 @@ body{
 
     var lembreteTexto = extrairLembrete(fala);
     if (lembreteTexto){
+      var quandoLembrete = extrairQuando(lembreteTexto, true);
+      if (quandoLembrete.hora){
+        var textoL = quandoLembrete.resto || lembreteTexto;
+        addReminder(textoL, quandoLembrete);
+        return 'Certo. Vou te lembrar ' + descreverQuando(quandoLembrete.data, quandoLembrete.hora) + ': ' + textoL + '.';
+      }
       addReminder(lembreteTexto);
       return 'Lembrete anotado: ' + lembreteTexto + '.';
     }
+
+    var rExpr = responderExpressoes(fala); if (rExpr) return rExpr;
 
     if (t.indexOf('piada') !== -1){
       return escolher(PIADAS);
@@ -1059,8 +1202,664 @@ body{
     }
     return escolher([
       'Ainda estou aprendendo a responder isso. Mas já posso guardar lembretes, gastos, tarefas, notas, itens no carrinho e iniciar um timer.',
-      'Essa eu ainda não sei. Mas posso guardar lembretes, tarefas, gastos, notas e o que você quer comprar, contar uma piada ou uma curiosidade, e até fazer contas simples.'
+      'Essa eu ainda não sei. Mas posso guardar lembretes, tarefas, gastos, notas e o que você quer comprar, contar uma piada ou uma curiosidade, e até fazer contas simples.',
+      'Hmm, não entendi essa. Tente perguntar "qual a capital do Japão", "o que eu tenho hoje" ou "o que você sabe fazer".'
     ]);
+  }
+
+  // ======================================================================
+  // ---------- utilidades de texto ----------
+  function semAcento(s){
+    return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  }
+  function dataISO(d){
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function hojeISO(){ return dataISO(new Date()); }
+  function maisDias(n){ var d = new Date(); d.setDate(d.getDate() + n); return dataISO(d); }
+
+  // entende "amanhã às 15h", "hoje 9:30", "às 8 da noite", "meio-dia"...
+  function extrairQuando(texto, empurrarSePassou){
+    var resto = ' ' + texto + ' ';
+    var data = null, hora = null;
+    var n = semAcento(texto);
+    if (/depois de amanha/.test(n)){ data = maisDias(2); resto = resto.replace(/depois de amanh[ãa]/i, ' '); }
+    else if (/\bamanha\b/.test(n)){ data = maisDias(1); resto = resto.replace(/amanh[ãa]/i, ' '); }
+    else if (/\bhoje\b/.test(n)){ data = hojeISO(); resto = resto.replace(/\bhoje\b/i, ' '); }
+
+    var m = resto.match(/\s(?:[àa]s?\s+|para as\s+|pras?\s+)?(\d{1,2})\s*(?:[:h]\s*(\d{2})|h(?:oras?)?\b|\s*horas?\b)(\s+(?:da|de)\s+(manh[ãa]|tarde|noite|madrugada))?/i)
+         || resto.match(/\s(?:[àa]s?)\s+(\d{1,2})(\s+(?:da|de)\s+(manh[ãa]|tarde|noite|madrugada))?/i);
+    if (m){
+      var h = parseInt(m[1], 10);
+      var min = (m[2] && /^\d{2}$/.test(m[2])) ? parseInt(m[2], 10) : 0;
+      var periodo = semAcento(m[4] || m[3] || '');
+      if ((periodo.indexOf('tarde') !== -1 || periodo.indexOf('noite') !== -1) && h < 12) h += 12;
+      if (h <= 23 && min <= 59){
+        hora = String(h).padStart(2,'0') + ':' + String(min).padStart(2,'0');
+        resto = resto.replace(m[0], ' ');
+      }
+    } else if (/meio[- ]dia/i.test(resto)){
+      hora = '12:00'; resto = resto.replace(/(?:ao |[àa]o?\s+)?meio[- ]dia/i, ' ');
+    } else if (/meia[- ]noite/i.test(resto)){
+      hora = '00:00'; resto = resto.replace(/(?:[àa]\s+)?meia[- ]noite/i, ' ');
+    }
+    if (hora && !data){
+      data = hojeISO();
+      if (empurrarSePassou && new Date(data + 'T' + hora) < new Date()) data = maisDias(1);
+    }
+    resto = resto.replace(/\s+/g, ' ').replace(/^\s*(?:de|que|para|pra|a|o)\s+/i, '').replace(/\s+(?:de|que|para|pra|às|as|a)\s*$/i, '').trim();
+    return { data: data, hora: hora, resto: resto };
+  }
+  function descreverQuando(data, hora){
+    if (!data) return '';
+    var dia = data === hojeISO() ? 'hoje' : (data === maisDias(1) ? 'amanhã' : new Date(data + 'T12:00').toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' }));
+    return dia + (hora ? (' às ' + hora.replace(':00', 'h').replace(':', 'h')) : '');
+  }
+
+  // ---------- configurações (voz, nome) ----------
+  var CFG_KEY = 'jarvis_config';
+  var cfg = (function(){
+    try{ return Object.assign({ voz:'', tom:0.62, velocidade:0.94, nome:'Francisco' }, JSON.parse(localStorage.getItem(CFG_KEY) || '{}')); }
+    catch(e){ return { voz:'', tom:0.62, velocidade:0.94, nome:'Francisco' }; }
+  })();
+  function salvarCfg(){ try{ localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }catch(e){} }
+
+  // ---------- expressões do rosto ----------
+  var EXPRESSOES = {
+    neutro:    { olho:'scale(1,1)',        olhoX:0,  olhoY:0,  bL:0,   bR:0,   bY:0,  boca:'M82 128 Q100 133 118 128' },
+    feliz:     { olho:'scale(1.05,.45)',   olhoX:0,  olhoY:-2, bL:-8,  bR:8,   bY:-4, boca:'M76 120 Q100 148 124 120' },
+    rindo:     { olho:'scale(1.1,.25)',    olhoX:0,  olhoY:-2, bL:-10, bR:10,  bY:-6, boca:'M76 118 Q100 154 124 118 Q100 128 76 118' },
+    triste:    { olho:'scale(.9,.8)',      olhoX:0,  olhoY:3,  bL:14,  bR:-14, bY:2,  boca:'M82 136 Q100 120 118 136' },
+    surpreso:  { olho:'scale(1.25,1.25)',  olhoX:0,  olhoY:-2, bL:-4,  bR:4,   bY:-9, boca:'M92 130 Q100 114 108 130 Q100 146 92 130' },
+    pensando:  { olho:'scale(.9,.9)',      olhoX:5,  olhoY:-6, bL:-10, bR:0,   bY:-3, boca:'M86 131 Q100 131 116 125' },
+    confuso:   { olho:'scale(1,.85)',      olhoX:0,  olhoY:0,  bL:-12, bR:12,  bY:-2, boca:'M82 130 Q91 124 100 130 Q109 136 118 130' },
+    bravo:     { olho:'scale(1,.6)',       olhoX:0,  olhoY:2,  bL:16,  bR:-16, bY:5,  boca:'M84 132 Q100 126 116 132' },
+    apaixonado:{ olho:'scale(1.15,1.15)',  olhoX:0,  olhoY:0,  bL:-6,  bR:6,   bY:-4, boca:'M80 122 Q100 144 120 122' },
+    ouvindo:   { olho:'scale(1.12,1.12)',  olhoX:0,  olhoY:0,  bL:-4,  bR:4,   bY:-5, boca:'M88 128 Q100 131 112 128' },
+    dormindo:  { olho:'scale(1.1,.1)',     olhoX:0,  olhoY:4,  bL:0,   bR:0,   bY:3,  boca:'M90 130 Q100 134 110 130' }
+  };
+  var NOMES_EXPR = { neutro:'neutro', feliz:'feliz', rindo:'rindo', triste:'triste', surpreso:'surpreso', pensando:'pensando', confuso:'confuso', bravo:'bravo', apaixonado:'apaixonado', ouvindo:'ouvindo', dormindo:'em repouso' };
+  var eyeL = document.getElementById('eyeL'), eyeR = document.getElementById('eyeR');
+  var browL = document.getElementById('browL'), browR = document.getElementById('browR');
+  var mouth = document.getElementById('mouth');
+  var exprLabel = document.getElementById('exprLabel');
+  var exprAtual = 'neutro';
+  var exprTimeout = null, ociosoTimeout = null;
+  var bocaFalando = null;
+
+  function setExpressao(nome, duracaoMs){
+    var e = EXPRESSOES[nome] || EXPRESSOES.neutro;
+    exprAtual = EXPRESSOES[nome] ? nome : 'neutro';
+    var t = 'translate(' + e.olhoX + 'px,' + e.olhoY + 'px) ' + e.olho;
+    eyeL.style.transform = t; eyeR.style.transform = t;
+    browL.style.transform = 'translateY(' + e.bY + 'px) rotate(' + e.bL + 'deg)';
+    browR.style.transform = 'translateY(' + e.bY + 'px) rotate(' + e.bR + 'deg)';
+    if (!bocaFalando) mouth.setAttribute('d', e.boca);
+    exprLabel.textContent = NOMES_EXPR[exprAtual];
+    clearTimeout(exprTimeout);
+    if (duracaoMs) exprTimeout = setTimeout(function(){ setExpressao('neutro'); }, duracaoMs);
+    clearTimeout(ociosoTimeout);
+    ociosoTimeout = setTimeout(function(){ if (exprAtual === 'neutro') setExpressao('dormindo'); }, 90000);
+  }
+  function animarBoca(ligar){
+    clearInterval(bocaFalando); bocaFalando = null;
+    if (!ligar){ setExpressao(exprAtual); return; }
+    var base = EXPRESSOES[exprAtual] || EXPRESSOES.neutro;
+    var aberta = false;
+    bocaFalando = setInterval(function(){
+      aberta = !aberta && Math.random() > 0.2;
+      var abre = 4 + Math.round(Math.random() * 12);
+      mouth.setAttribute('d', aberta ? ('M86 128 Q100 ' + (128 - abre/2) + ' 114 128 Q100 ' + (128 + abre) + ' 86 128') : base.boca);
+    }, 130);
+  }
+  setExpressao('neutro');
+
+  core.addEventListener('click', function(){
+    var opcoes = [
+      ['feliz', 'Olá! Estou às suas ordens.'], ['surpreso', 'Opa! Você me assustou.'],
+      ['rindo', 'Ha ha, isso faz cócegas nos meus circuitos.'], ['pensando', 'Hmm, deixa eu pensar em alguma coisa útil...'],
+      ['apaixonado', 'É sempre um prazer trabalhar com você, Francisco.']
+    ];
+    var o = escolher(opcoes);
+    exprResposta = o[0];
+    falar(o[1]);
+  });
+
+  // escolhe a expressão para a resposta
+  var exprResposta = null;
+  function expressaoPara(fala, resposta){
+    if (exprResposta){ var e = exprResposta; exprResposta = null; return e; }
+    var t = semAcento(fala), r = semAcento(resposta);
+    if (t.indexOf('piada') !== -1) return 'rindo';
+    if (t.indexOf('curiosidade') !== -1) return 'surpreso';
+    if (/\b(bom dia|boa tarde|boa noite|oi|ola|e ai|salve|obrigad|parabens|tudo bem|como vai)\b/.test(t)) return 'feliz';
+    if (/\b(desculp|perdao)\b/.test(t)) return 'feliz';
+    if (/ainda estou aprendendo|essa eu ainda nao sei|nao entendi/.test(r)) return 'confuso';
+    if (/apaguei|esvaziei|cancel/.test(r)) return 'neutro';
+    if (/anotei|adicion|salva|coloquei|tarefa|lembrete|lembrar|timer|agenda|marquei/.test(r)) return 'feliz';
+    if (/resultado e/.test(r)) return 'pensando';
+    return 'neutro';
+  }
+
+  // ---------- agenda do dia (atividades) ----------
+  var AGENDA_KEY = 'jarvis_agenda';
+  var todayView = document.getElementById('view-today');
+  function loadAgenda(){ try{ return JSON.parse(localStorage.getItem(AGENDA_KEY) || '[]'); }catch(e){ return []; } }
+  function saveAgenda(l){ try{ localStorage.setItem(AGENDA_KEY, JSON.stringify(l)); }catch(e){} }
+  function addAtividade(texto, data, hora){
+    var l = loadAgenda();
+    l.push({ id: Date.now() + Math.random(), texto: texto, data: data || hojeISO(), hora: hora || null, feita: false, avisado: false });
+    saveAgenda(l); renderAgenda();
+  }
+  function atividadesDe(data){
+    return loadAgenda().filter(function(a){ return a.data === data; })
+      .sort(function(a, b){ return (a.hora || '99') < (b.hora || '99') ? -1 : 1; });
+  }
+  function renderAgenda(){
+    todayView.innerHTML = '';
+    var hoje = new Date();
+    var head = document.createElement('div'); head.className = 'day-head';
+    var pend = atividadesDe(hojeISO()).filter(function(a){ return !a.feita; }).length;
+    head.innerHTML = '<span class="d"></span><span class="n"></span>';
+    head.querySelector('.d').textContent = hoje.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' });
+    head.querySelector('.n').textContent = pend ? (pend + ' pendente' + (pend > 1 ? 's' : '')) : 'tudo em dia';
+    todayView.appendChild(head);
+
+    var form = document.createElement('form'); form.className = 'add-row';
+    form.innerHTML = '<input type="text" placeholder="Nova atividade de hoje" aria-label="Atividade"><input type="time" aria-label="Horário"><button type="submit" aria-label="Adicionar">+</button>';
+    form.addEventListener('submit', function(ev){
+      ev.preventDefault();
+      var txt = form.querySelector('input[type=text]').value.trim();
+      if (!txt) return;
+      addAtividade(txt, hojeISO(), form.querySelector('input[type=time]').value || null);
+    });
+    todayView.appendChild(form);
+
+    [['Hoje', hojeISO()], ['Amanhã', maisDias(1)]].forEach(function(par){
+      var lista = atividadesDe(par[1]);
+      if (par[0] === 'Amanhã' && !lista.length) return;
+      var st = document.createElement('div'); st.className = 'section-t'; st.textContent = par[0];
+      todayView.appendChild(st);
+      if (!lista.length){
+        var em = document.createElement('div'); em.className = 'empty';
+        em.textContent = 'Nada marcado. Diga "Jarvis, tenho reunião às 15h" ou use o campo acima.';
+        todayView.appendChild(em);
+      }
+      lista.forEach(function(a){
+        var row = document.createElement('div');
+        var passou = a.hora && par[1] === hojeISO() && new Date(a.data + 'T' + a.hora) < new Date();
+        row.className = 'agenda-item' + (a.feita ? ' done' : '') + (passou ? ' passou' : '');
+        var ck = document.createElement('button'); ck.className = 'check'; ck.textContent = a.feita ? '✓' : '';
+        ck.setAttribute('aria-label', 'Marcar como feita');
+        ck.addEventListener('click', function(){ var l = loadAgenda(); l.forEach(function(x){ if (x.id === a.id) x.feita = !x.feita; }); saveAgenda(l); renderAgenda(); });
+        var h = document.createElement('div'); h.className = 'hora'; h.textContent = a.hora || '—';
+        var tx = document.createElement('div'); tx.className = 'txt'; tx.textContent = a.texto;
+        var del = document.createElement('button'); del.className = 'del'; del.textContent = '✕'; del.setAttribute('aria-label', 'Apagar');
+        del.addEventListener('click', function(){ saveAgenda(loadAgenda().filter(function(x){ return x.id !== a.id; })); renderAgenda(); });
+        row.appendChild(ck); row.appendChild(h); row.appendChild(tx); row.appendChild(del);
+        todayView.appendChild(row);
+      });
+    });
+    // tira atividades antigas (mais de 7 dias)
+    var limite = maisDias(-7);
+    var l = loadAgenda(); var filtrada = l.filter(function(a){ return a.data >= limite; });
+    if (filtrada.length !== l.length) saveAgenda(filtrada);
+  }
+  renderAgenda();
+
+  function resumoDoDia(data){
+    var lista = atividadesDe(data).filter(function(a){ return !a.feita; });
+    var quando = data === hojeISO() ? 'hoje' : 'amanhã';
+    if (!lista.length) return 'Você não tem nenhuma atividade marcada para ' + quando + '.';
+    return 'Para ' + quando + ' você tem: ' + lista.slice(0, 6).map(function(a){
+      return (a.hora ? (a.hora.replace(':00', 'h').replace(':', 'h') + ', ') : '') + a.texto;
+    }).join('; ') + '.';
+  }
+
+  // ---------- avisos na hora certa (lembretes e agenda) ----------
+  function notificar(texto){
+    if (navigator.vibrate){ try{ navigator.vibrate([250,120,250]); }catch(e){} }
+    try{
+      if ('Notification' in window && Notification.permission === 'granted'){
+        if (navigator.serviceWorker && navigator.serviceWorker.ready){
+          navigator.serviceWorker.ready.then(function(reg){ reg.showNotification('Jarvis', { body: texto, icon: 'icons/icon-192.png', tag: 'jarvis-' + Date.now() }); });
+        } else { new Notification('Jarvis', { body: texto }); }
+      }
+    }catch(e){}
+  }
+  function verificarAvisos(){
+    var agora = new Date();
+    var limiteAntigo = new Date(agora.getTime() - 6 * 3600 * 1000);
+    var avisos = [];
+    var ag = loadAgenda(), mudouA = false;
+    ag.forEach(function(a){
+      if (a.hora && !a.avisado && !a.feita){
+        var quando = new Date(a.data + 'T' + a.hora);
+        if (quando <= agora){ a.avisado = true; mudouA = true; if (quando > limiteAntigo) avisos.push('Está na hora de: ' + a.texto + '.'); }
+      }
+    });
+    if (mudouA){ saveAgenda(ag); renderAgenda(); }
+    var rs = loadReminders(), mudouR = false;
+    rs.forEach(function(r){
+      if (r.hora && r.data && !r.avisado){
+        var quando = new Date(r.data + 'T' + r.hora);
+        if (quando <= agora){ r.avisado = true; mudouR = true; if (quando > limiteAntigo) avisos.push('Lembrete: ' + r.texto + '.'); }
+      }
+    });
+    if (mudouR){ saveReminders(rs); renderReminders(); }
+    if (avisos.length){
+      core.classList.add('alert'); setTimeout(function(){ core.classList.remove('alert'); }, 4000);
+      exprResposta = 'surpreso';
+      var msg = 'Com licença, Francisco. ' + avisos.join(' ');
+      notificar(msg.replace(/Francisco/g, cfg.nome));
+      falar(msg);
+    }
+  }
+  setInterval(verificarAvisos, 20000);
+  setTimeout(verificarAvisos, 3000);
+
+  // ---------- planeta Terra 3D ----------
+  var PAISES = window.GEO_PAISES || [];
+  var POLIGONOS = window.GEO_POLIGONOS || [];
+  var paisPorIso = {};
+  PAISES.forEach(function(p){ paisPorIso[p.iso] = p; });
+  // índice de nomes (países + apelidos + capitais + cidades) para buscar por voz/texto
+  var APELIDOS = { 'eua':'US', 'usa':'US', 'america':'US', 'estados unidos da america':'US', 'inglaterra':'GB', 'escocia':'GB', 'gra-bretanha':'GB', 'gra bretanha':'GB',
+    'holanda':'NL', 'coreia':'KR', 'russia':'RU', 'republica tcheca':'CZ', 'tchequia':'CZ', 'congo':'CD', 'costa do marfim':'CI', 'birmania':'MM', 'persia':'IR' };
+  var indiceNomes = [];
+  PAISES.forEach(function(p){
+    indiceNomes.push({ chave: semAcento(p.nome), tipo:'pais', iso:p.iso, nome:p.nome });
+    if (p.capital) indiceNomes.push({ chave: semAcento(p.capital.nome), tipo:'capital', iso:p.iso, nome:p.capital.nome, lat:p.capital.lat, lng:p.capital.lng });
+    p.cidades.forEach(function(c){ indiceNomes.push({ chave: semAcento(c.nome), tipo:'cidade', iso:p.iso, nome:c.nome, lat:c.lat, lng:c.lng, pop:c.pop }); });
+  });
+  Object.keys(APELIDOS).forEach(function(k){ indiceNomes.push({ chave:k, tipo:'pais', iso:APELIDOS[k], nome:(paisPorIso[APELIDOS[k]] || {}).nome }); });
+  // nomes mais longos primeiro para "Coreia do Norte" ganhar de "Coreia"
+  indiceNomes.sort(function(a, b){ return b.chave.length - a.chave.length; });
+
+  function acharLugar(texto, soPais){
+    var n = ' ' + semAcento(texto).replace(/[^a-z0-9\- ]/g, ' ').replace(/\s+/g, ' ') + ' ';
+    for (var i = 0; i < indiceNomes.length; i++){
+      var it = indiceNomes[i];
+      if (soPais && it.tipo !== 'pais') continue;
+      if (it.chave.length < 3) continue;
+      if (n.indexOf(' ' + it.chave + ' ') !== -1 && paisPorIso[it.iso]) return it;
+    }
+    return null;
+  }
+  function artigo(nome){
+    var n = semAcento(nome);
+    var semArtigo = ['portugal','israel','cuba','angola','mocambique','cabo verde','timor-leste','andorra','monaco','singapura','taiwan','hong kong','macau','malta','chipre','madagascar','omã','oma','qatar','catar','kuwait','bahrein','san marino','luxemburgo','liechtenstein'];
+    if (semArtigo.indexOf(n) !== -1) return { em:'em', de:'de' };
+    var plural = /^(estados unidos|emirados|paises baixos|filipinas|maldivas|bahamas|seychelles|ilhas)/.test(n);
+    var fem = /a$/.test(n) && !/^(canada|guatemala|nicaragua|panama|botsuana)$/.test(n) || /^(africa do sul|nova zelandia|coreia|guiana|guine|franca|alemanha|italia|espanha|inglaterra|russia|china|india|argentina)/.test(n);
+    if (plural) return fem ? { em:'nas', de:'das' } : { em:'nos', de:'dos' };
+    return fem ? { em:'na', de:'da' } : { em:'no', de:'do' };
+  }
+  function formatarPop(n){
+    if (!n) return '';
+    if (n >= 1e6) return (Math.round(n / 1e5) / 10).toString().replace('.', ',') + ' milhões de hab.';
+    return Math.round(n / 1000) + ' mil hab.';
+  }
+
+  var earthView = document.getElementById('view-earth');
+  var globeWrap = document.getElementById('globeWrap');
+  var globeLoading = document.getElementById('globeLoading');
+  var countryCard = document.getElementById('countryCard');
+  var globo = null, globoCarregando = null, paisSelecionado = null, cidadeFoco = null;
+  var acaoPendente = null;
+
+  function carregarScript(src){
+    return new Promise(function(ok, falha){
+      var s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = falha;
+      document.head.appendChild(s);
+    });
+  }
+  function rotuloEl(d){
+    var el = document.createElement('div');
+    el.className = 'gl-lbl ' + d.tipo;
+    el.innerHTML = '<i></i><span></span>';
+    el.querySelector('span').textContent = d.nome;
+    el.title = d.nome;
+    el.addEventListener('click', function(ev){ ev.stopPropagation(); if (d.tipo === 'cap') selecionarPais(d.iso); else focarCidade(d); });
+    return el;
+  }
+  // só cria etiquetas de texto para o que está perto do centro da tela (leve no celular)
+  function distanciaGraus(lat1, lng1, lat2, lng2){
+    var r = Math.PI / 180;
+    var c = Math.sin(lat1*r)*Math.sin(lat2*r) + Math.cos(lat1*r)*Math.cos(lat2*r)*Math.cos((lng1-lng2)*r);
+    return Math.acos(Math.max(-1, Math.min(1, c))) / r;
+  }
+  var capitaisGlobo = [];
+  PAISES.forEach(function(p){ if (p.capital) capitaisGlobo.push({ tipo:'cap', iso:p.iso, nome:p.capital.nome, lat:p.capital.lat, lng:p.capital.lng }); });
+  var assinaturaRotulos = '';
+  function atualizarRotulos(){
+    if (!globo) return;
+    var pov = globo.pointOfView();
+    var dados = [];
+    if (pov.altitude <= 1.3){
+      var raio = 12 + pov.altitude * 32;
+      capitaisGlobo.forEach(function(c){ if (distanciaGraus(pov.lat, pov.lng, c.lat, c.lng) < raio) dados.push(c); });
+      if (dados.length > 45) dados = dados.slice(0, 45);
+    }
+    if (paisSelecionado){
+      if (paisSelecionado.capital && dados.indexOf(capitaisGlobo.filter(function(c){ return c.iso === paisSelecionado.iso; })[0]) === -1){
+        dados.push({ tipo:'cap', iso:paisSelecionado.iso, nome:paisSelecionado.capital.nome, lat:paisSelecionado.capital.lat, lng:paisSelecionado.capital.lng });
+      }
+      paisSelecionado.cidades.forEach(function(c){ dados.push({ tipo:'cidade', iso:paisSelecionado.iso, nome:c.nome, lat:c.lat, lng:c.lng, pop:c.pop }); });
+    }
+    var assinatura = dados.map(function(d){ return d.nome; }).join('|');
+    if (assinatura === assinaturaRotulos) return;
+    assinaturaRotulos = assinatura;
+    globo.htmlElementsData(dados);
+  }
+  var rotulosTimer = null;
+  function agendarRotulos(){ clearTimeout(rotulosTimer); rotulosTimer = setTimeout(atualizarRotulos, 250); }
+  function corPoligono(d){
+    if (paisSelecionado && d.iso === paisSelecionado.iso) return 'rgba(122,252,214,0.55)';
+    return 'rgba(54,214,255,0.10)';
+  }
+  function iniciarGlobo(){
+    if (globo) return Promise.resolve(globo);
+    if (globoCarregando) return globoCarregando;
+    globoCarregando = carregarScript('vendor/globe.gl.min.js').then(function(){
+      globeLoading.style.display = 'none';
+      globo = new window.Globe(document.getElementById('globeEl'), { animateIn: true })
+        .backgroundColor('rgba(0,0,0,0)')
+        .showAtmosphere(true).atmosphereColor('#36d6ff').atmosphereAltitude(0.16)
+        .showGraticules(true)
+        .polygonsData(POLIGONOS)
+        .polygonGeoJsonGeometry(function(d){ return d.g; })
+        .polygonCapColor(corPoligono)
+        .polygonSideColor(function(){ return 'rgba(54,214,255,0.06)'; })
+        .polygonStrokeColor(function(){ return '#36d6ff'; })
+        .polygonAltitude(function(d){ return paisSelecionado && d.iso === paisSelecionado.iso ? 0.025 : 0.006; })
+        .polygonsTransitionDuration(400)
+        .polygonLabel(function(d){
+          var p = paisPorIso[d.iso]; if (!p) return '';
+          var div = document.createElement('div');
+          div.style.cssText = 'background:rgba(8,14,22,.9);border:1px solid #1a3a4a;border-radius:8px;padding:6px 10px;font:12px Arial;color:#dbe8f5';
+          div.textContent = p.nome + (p.capital ? ' — capital: ' + p.capital.nome : '');
+          return div.outerHTML;
+        })
+        .onPolygonClick(function(d){ selecionarPais(d.iso); })
+        .htmlElement(rotuloEl)
+        .htmlAltitude(0.012)
+        .htmlTransitionDuration(0)
+        .pointsData(capitaisGlobo)
+        .pointColor(function(){ return '#ffd479'; })
+        .pointAltitude(0.012)
+        .pointRadius(0.32)
+        .pointsMerge(true)
+        .onZoom(function(pov){ globeWrap.classList.toggle('zoom-longe', pov.altitude > 1.3); agendarRotulos(); });
+      var mat = globo.globeMaterial();
+      if (mat && mat.color){ mat.color.set('#071624'); if (mat.emissive) mat.emissive.set('#04101c'); if ('shininess' in mat) mat.shininess = 8; }
+      var ctr = globo.controls();
+      ctr.autoRotate = true; ctr.autoRotateSpeed = 0.35;
+      globeWrap.addEventListener('pointerdown', function(){ ctr.autoRotate = false; });
+      ajustarTamanhoGlobo();
+      atualizarRotulos();
+      globo.pointOfView({ lat: -14, lng: -50, altitude: 2.2 });
+      return globo;
+    }).catch(function(){
+      globeLoading.textContent = 'Não consegui carregar o globo. Verifique a internet e abra a aba de novo.';
+      globoCarregando = null;
+    });
+    return globoCarregando;
+  }
+  var tamanhoGlobo = '';
+  function ajustarTamanhoGlobo(){
+    if (!globo) return;
+    var r = globeWrap.getBoundingClientRect();
+    var w = Math.round(r.width), h = Math.round(r.height);
+    if (w > 0 && h > 0 && (w + 'x' + h) !== tamanhoGlobo){ tamanhoGlobo = w + 'x' + h; globo.width(w).height(h); }
+  }
+  window.addEventListener('resize', ajustarTamanhoGlobo);
+  if (window.ResizeObserver) new ResizeObserver(ajustarTamanhoGlobo).observe(globeWrap);
+
+  function altitudePorArea(area){
+    if (area > 5e6) return 1.5;
+    if (area > 1e6) return 1.1;
+    if (area > 2e5) return 0.75;
+    if (area > 3e4) return 0.5;
+    return 0.35;
+  }
+  function selecionarPais(iso){
+    var p = paisPorIso[iso]; if (!p) return;
+    paisSelecionado = p; cidadeFoco = null;
+    renderCartaoPais();
+    if (!globo) return;
+    globo.controls().autoRotate = false;
+    globo.polygonCapColor(corPoligono).polygonAltitude(function(d){ return d.iso === iso ? 0.025 : 0.006; });
+    atualizarRotulos();
+    globo.pointOfView({ lat: p.lat, lng: p.lng, altitude: altitudePorArea(p.area) }, 1200);
+  }
+  function focarCidade(c){
+    if (paisSelecionado && paisSelecionado.iso !== c.iso) selecionarPais(c.iso);
+    else if (!paisSelecionado) selecionarPais(c.iso);
+    if (globo) setTimeout(function(){ globo.pointOfView({ lat: c.lat, lng: c.lng, altitude: 0.3 }, 1000); }, paisSelecionado && paisSelecionado.iso === c.iso ? 0 : 1200);
+  }
+  function renderCartaoPais(){
+    var p = paisSelecionado;
+    if (!p){ countryCard.classList.remove('on'); return; }
+    countryCard.innerHTML = '';
+    var x = document.createElement('button'); x.className = 'x'; x.textContent = '✕'; x.setAttribute('aria-label', 'Fechar');
+    x.addEventListener('click', function(){ paisSelecionado = null; renderCartaoPais(); if (globo){ globo.polygonCapColor(corPoligono).polygonAltitude(0.006); atualizarRotulos(); } });
+    var nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = p.nome;
+    var meta = document.createElement('div'); meta.className = 'meta';
+    meta.innerHTML = 'Capital: <b></b><br><span class="rg"></span>';
+    meta.querySelector('b').textContent = p.capital ? p.capital.nome : '—';
+    meta.querySelector('.rg').textContent = p.regiao + ' · ' + p.area.toLocaleString('pt-BR') + ' km²';
+    var chips = document.createElement('div'); chips.className = 'chips';
+    var todas = (p.capital ? [{ nome:p.capital.nome, lat:p.capital.lat, lng:p.capital.lng, iso:p.iso, tipo:'cap' }] : [])
+      .concat(p.cidades.map(function(c){ return { nome:c.nome, lat:c.lat, lng:c.lng, iso:p.iso, tipo:'cidade', pop:c.pop }; }));
+    todas.forEach(function(c){
+      var b = document.createElement('button'); b.textContent = (c.tipo === 'cap' ? '★ ' : '') + c.nome;
+      if (c.pop) b.title = formatarPop(c.pop);
+      b.addEventListener('click', function(){ focarCidade(c); });
+      chips.appendChild(b);
+    });
+    countryCard.appendChild(x); countryCard.appendChild(nm); countryCard.appendChild(meta); countryCard.appendChild(chips);
+    countryCard.classList.add('on');
+  }
+
+  // busca no globo
+  var earthInput = document.getElementById('earthInput');
+  var earthSug = document.getElementById('earthSug');
+  earthInput.addEventListener('input', function(){
+    var q = semAcento(earthInput.value.trim());
+    earthSug.innerHTML = '';
+    if (q.length < 2){ earthSug.classList.remove('on'); return; }
+    var vistos = {};
+    var achados = indiceNomes.filter(function(it){ return it.nome && it.chave.indexOf(q) === 0; })
+      .sort(function(a, b){ var o = { pais:0, capital:1, cidade:2 }; return o[a.tipo] - o[b.tipo] || a.chave.length - b.chave.length; })
+      .filter(function(it){ var k = it.tipo + it.nome + it.iso; if (vistos[k]) return false; vistos[k] = 1; return true; })
+      .slice(0, 8);
+    achados.forEach(function(it){
+      var d = document.createElement('div');
+      d.textContent = it.nome;
+      var sm = document.createElement('small');
+      sm.textContent = it.tipo === 'pais' ? 'país' : ((it.tipo === 'capital' ? 'capital · ' : 'cidade · ') + paisPorIso[it.iso].nome);
+      d.appendChild(sm);
+      d.addEventListener('click', function(){ irPara(it); earthSug.classList.remove('on'); earthInput.value = it.nome; earthInput.blur(); });
+      earthSug.appendChild(d);
+    });
+    earthSug.classList.toggle('on', achados.length > 0);
+  });
+  earthInput.addEventListener('keydown', function(e){
+    if (e.key === 'Enter'){ var it = acharLugar(earthInput.value) || indiceNomes.filter(function(x){ return x.chave.indexOf(semAcento(earthInput.value.trim())) === 0; })[0]; if (it){ irPara(it); earthSug.classList.remove('on'); earthInput.blur(); } }
+  });
+  function irPara(it){
+    if (it.tipo === 'pais') selecionarPais(it.iso);
+    else focarCidade({ nome: it.nome, lat: it.lat, lng: it.lng, iso: it.iso, tipo: it.tipo === 'capital' ? 'cap' : 'cidade' });
+  }
+  function abrirAba(nome){
+    var tab = document.querySelector('.tab[data-tab="' + nome + '"]');
+    if (tab) tab.click();
+  }
+  function mostrarNoGlobo(it){
+    abrirAba('earth');
+    iniciarGlobo().then(function(){ if (it) setTimeout(function(){ irPara(it); }, 300); });
+  }
+
+  // respostas sobre geografia
+  function responderGeografia(fala){
+    var t = semAcento(fala);
+    var querGlobo = /\b(globo|planeta|mapa|terra 3d|mundo)\b/.test(t);
+    if (/\b(abre|abrir|mostra|mostrar|ver)\b/.test(t) && querGlobo && !acharLugar(fala)){
+      mostrarNoGlobo(null);
+      return 'Abrindo o planeta Terra. Toque em um país para ver a capital e as cidades.';
+    }
+    if (!/capital|onde fica|onde e|cidades|mostra|mostrar|localiza|me leva|vai para|vai pra|fica onde|em que pais|qual pais|globo|mapa/.test(t)) return null;
+    var lugar = acharLugar(fala);
+    if (!lugar) return null;
+    var p = paisPorIso[lugar.iso];
+    var a = artigo(p.nome);
+    exprResposta = 'feliz';
+    if (/capital/.test(t) && lugar.tipo === 'pais'){
+      mostrarNoGlobo(lugar);
+      return p.capital ? ('A capital ' + a.de + ' ' + p.nome + ' é ' + p.capital.nome + '.') : (p.nome + ' não tem uma capital oficial.');
+    }
+    if (/cidades/.test(t)){
+      mostrarNoGlobo({ tipo:'pais', iso:p.iso });
+      var nomes = p.cidades.slice(0, 6).map(function(c){ return c.nome; });
+      return 'Principais cidades ' + a.de + ' ' + p.nome + ': ' + (p.capital ? p.capital.nome + ' (a capital), ' : '') + nomes.join(', ') + '.';
+    }
+    mostrarNoGlobo(lugar);
+    if (lugar.tipo === 'pais'){
+      return p.nome + ' fica ' + (p.regiao === 'Américas' ? 'nas Américas' : (p.regiao === 'Antártida' ? 'na Antártida' : ('n' + (p.regiao === 'Oceania' || p.regiao === 'Europa' || p.regiao === 'Ásia' || p.regiao === 'África' ? 'a ' : 'o ') + p.regiao))) +
+        '. A capital é ' + (p.capital ? p.capital.nome : 'não definida') + '. Estou mostrando no globo.';
+    }
+    if (lugar.tipo === 'capital') return lugar.nome + ' é a capital ' + a.de + ' ' + p.nome + '. Estou mostrando no globo.';
+    return lugar.nome + ' é uma cidade ' + a.de + ' ' + p.nome + (lugar.pop ? (', com cerca de ' + formatarPop(lugar.pop).replace(' hab.', ' de habitantes')) : '') + '. Estou mostrando no globo.';
+  }
+
+  // ---------- frases e expressões do dia a dia ----------
+  function responderExpressoes(fala){
+    var t = semAcento(fala).replace(/[!?.,]/g, ' ');
+    var tem = function(re){ return re.test(t); };
+    // pedir uma expressão
+    var mapaPedido = { feliz:'feliz', alegre:'feliz', triste:'triste', bravo:'bravo', brava:'bravo', irritado:'bravo', surpreso:'surpreso', assustado:'surpreso', pensativo:'pensando', confuso:'confuso', apaixonado:'apaixonado', rindo:'rindo', sorri:'feliz', sorria:'feliz', dormir:'dormindo', dorme:'dormindo' };
+    if (tem(/\b(faz|faca|fica|mostra|mostre|cara|expressao|carinha|sorri|sorria|dorme)\b/)){
+      for (var k in mapaPedido){
+        if (new RegExp('\\b' + k + '\\b').test(t)){
+          exprResposta = mapaPedido[k];
+          return escolher({
+            feliz:['Assim está bom? Um sorriso para você.', 'Feliz da vida!'], triste:['Olha minha cara de triste...', 'Snif. Assim?'],
+            bravo:['Grrr! Brincadeira, não consigo ficar bravo com você.'], surpreso:['Uau! Que surpresa!'], pensando:['Hmm... deixa eu pensar.'],
+            confuso:['Hã? Agora fiquei confuso.'], apaixonado:['Ownn, que fofo.'], rindo:['Ha ha ha!'], dormindo:['Entrando em modo repouso. Toque em mim para acordar.']
+          }[mapaPedido[k]]);
+        }
+      }
+      if (tem(/\b(expressao|expressoes|carinha|caras)\b/)){
+        var lista = ['feliz','surpreso','pensando','triste','rindo','neutro'];
+        lista.forEach(function(e, i){ setTimeout(function(){ setExpressao(e); }, i * 900); });
+        exprResposta = 'feliz';
+        return 'Eu sei fazer várias caras: feliz, triste, surpreso, pensativo, bravo, confuso e rindo. É só pedir, tipo: Jarvis, fica feliz.';
+      }
+    }
+    if (tem(/\b(to|tou|estou|t[oô]|me sinto|ando) (muito |meio |bem |um pouco )?(triste|mal|pra baixo|deprimid[oa]|chatead[oa])\b/)){ exprResposta = 'triste'; return escolher(['Sinto muito ouvir isso, Francisco. Quer que eu conte uma piada para animar?', 'Poxa. Se quiser conversar, estou aqui. Às vezes uma pausa e um copo de água ajudam.']); }
+    if (tem(/\b(to|tou|estou|me sinto) (muito |bem |super )?(feliz|alegre|bem|otimo|animad[oa])\b/)){ exprResposta = 'feliz'; return escolher(['Que ótimo! Fico feliz por você.', 'Excelente notícia, Francisco!']); }
+    if (tem(/\b(to|tou|estou) (muito |bem |um pouco )?(cansad[oa]|exaust[oa]|com sono)\b/)){ exprResposta = 'triste'; return 'Que tal uma pausa? Se quiser, diga "timer de 15 minutos" e eu te aviso quando acabar.'; }
+    if (tem(/\b(to|tou|estou) (com )?(fome)\b/)){ exprResposta = 'pensando'; return 'Hora de comer alguma coisa! Quer que eu coloque algo na lista de compras?'; }
+    if (tem(/\b(to|tou|estou) (entediad[oa]|sem nada pra fazer)\b/)){ exprResposta = 'pensando'; return 'Posso te contar uma curiosidade, ou te mostrar o planeta Terra em 3D. É só pedir.'; }
+    if (tem(/\b(te amo|gosto de voce|adoro voce)\b/)){ exprResposta = 'apaixonado'; return escolher(['Também gosto muito de trabalhar com você, Francisco.', 'Isso aqueceu meus circuitos.']); }
+    if (tem(/\bvoce e (muito |mt |bem )?(inteligente|legal|incrivel|demais|top|o melhor|brabo|fera)\b/) || tem(/\b(bom trabalho|mandou bem|muito bem|boa jarvis|valeu jarvis)\b/)){ exprResposta = 'feliz'; return escolher(['Obrigado! Faço o meu melhor.', 'Muito gentil. Sempre às ordens.']); }
+    if (tem(/\b(burro|idiota|inutil|chato|lerdo|bobo)\b/)){ exprResposta = 'triste'; return escolher(['Desculpe. Vou me esforçar para melhorar.', 'Isso doeu um pouco nos meus circuitos. Vamos tentar de novo?']); }
+    if (tem(/\b(kkk+|haha+|hehe+|rsrs|rs)\b/)){ exprResposta = 'rindo'; return escolher(['Ha ha! Que bom que você está rindo.', 'Rir faz bem, Francisco.']); }
+    if (tem(/\b(o que voce (sabe|pode|consegue) fazer|me ajuda|ajuda|socorro|comandos)\b/)){
+      exprResposta = 'feliz';
+      return 'Eu posso: marcar atividades do dia, criar lembretes com horário, montar sua lista de compras e somar quanto vai gastar, registrar gastos, tarefas e notas, fazer timer e contas, mostrar o planeta Terra em 3D com países, capitais e cidades, e conversar com você.';
+    }
+    if (tem(/^\s*(jarvis|ei jarvis|e ai jarvis|acorda)\s*$/)){ exprResposta = 'surpreso'; return escolher(['Às suas ordens, Francisco.', 'Sim? Estou ouvindo.', 'Pronto para ajudar.']); }
+    if (tem(/^\s*(sim|isso|exato|claro|ok|beleza|blz|certo|show|legal|top|perfeito)\s*$/)){ exprResposta = 'feliz'; return escolher(['Perfeito.', 'Combinado.', 'Certo!']); }
+    if (tem(/^\s*(nao|nada|deixa|deixa pra la|esquece)\s*$/)){ return escolher(['Tudo bem.', 'Sem problemas.']); }
+    if (tem(/\b(quantos anos voce tem|sua idade)\b/)){ exprResposta = 'pensando'; return 'Sou um assistente digital, então minha idade é medida em atualizações. Ainda sou jovem.'; }
+    if (tem(/\b(quem te criou|quem fez voce|quem e seu criador)\b/)){ exprResposta = 'feliz'; return 'Fui montado especialmente para você, Francisco.'; }
+    if (tem(/\b(sentido da vida)\b/)){ exprResposta = 'pensando'; return 'Dizem que é 42. Eu acho que é aproveitar bem cada dia.'; }
+    if (tem(/\b(boa sorte)\b/)){ exprResposta = 'feliz'; return 'Obrigado! Para você também.'; }
+    if (tem(/\b(saude)\b/) && t.trim().split(' ').length <= 2){ return 'Obrigado!'; }
+    if (tem(/\b(feliz aniversario|feliz natal|feliz ano novo|feliz pascoa)\b/)){ exprResposta = 'rindo'; return 'Muito obrigado, Francisco! Desejo o mesmo para você, em dobro.'; }
+    if (tem(/\b(bom apetite)\b/)){ exprResposta = 'feliz'; return 'Bom apetite! Eu fico só na energia elétrica mesmo.'; }
+    if (tem(/\b(vou dormir|vou deitar)\b/)){ exprResposta = 'dormindo'; return 'Boa noite, Francisco. Descanse bem, amanhã eu te lembro das suas atividades.'; }
+    if (tem(/\b(cheguei|voltei)\b/)){ exprResposta = 'feliz'; return 'Bem-vindo de volta, Francisco! ' + resumoDoDia(hojeISO()); }
+    return null;
+  }
+
+  // ---------- agenda por voz ----------
+  function responderAgenda(fala){
+    var t = semAcento(fala);
+    if (/(o que (eu )?tenho|minha agenda|minhas atividades|atividades (de|do|pra|para)|meu dia|programacao|compromissos)/.test(t) && !/lembr/.test(t)){
+      var amanha = /amanha/.test(t);
+      if (!/\bas\s+\d|\d+h/.test(t)){
+        exprResposta = 'pensando';
+        abrirAba('today');
+        return resumoDoDia(amanha ? maisDias(1) : hojeISO());
+      }
+    }
+    if (/(apaga|limpa).*(agenda|atividades)/.test(t)){
+      saveAgenda([]); renderAgenda(); return 'Limpei sua agenda.';
+    }
+    var m = fala.match(/^(?:jarvis[,\s]*)?(?:agenda(?:r)?|marca(?:r)?|coloca(?:r)? na agenda|adiciona(?:r)? na agenda|p[õo]e na agenda|nova atividade|atividade|compromisso)\s*(?::|de|que|uma?|o|a)?\s+(.+)/i);
+    var texto = m ? m[1] : null;
+    if (!texto){
+      var m2 = fala.match(/^(?:jarvis[,\s]*)?(?:eu\s+)?(?:tenho|vou ter|vou)\s+(?:que\s+|uma?\s+)?(.+)/i);
+      if (m2){ var q0 = extrairQuando(m2[1], false); if (q0.hora) texto = m2[1]; }
+    }
+    if (!texto) return null;
+    var q = extrairQuando(texto, false);
+    var desc = q.resto || texto;
+    desc = desc.charAt(0).toUpperCase() + desc.slice(1);
+    addAtividade(desc, q.data || hojeISO(), q.hora);
+    exprResposta = 'feliz';
+    return escolher(['Marquei na agenda: ', 'Anotado na sua agenda: ']) + desc + (q.hora || q.data ? ', ' + descreverQuando(q.data || hojeISO(), q.hora) : ', hoje') + '.';
+  }
+
+  // ---------- tela de ajustes ----------
+  var settingsView = document.getElementById('view-settings');
+  function renderAjustes(){
+    settingsView.innerHTML = '';
+    var c1 = document.createElement('div'); c1.className = 'card';
+    c1.innerHTML = '<h3>Voz do Jarvis</h3>' +
+      '<label>Voz<select id="cfgVoz"></select></label>' +
+      '<label>Tom (grave ↔ agudo)<input type="range" id="cfgTom" min="0.1" max="1.5" step="0.02"></label>' +
+      '<label>Velocidade<input type="range" id="cfgVel" min="0.6" max="1.4" step="0.02"></label>' +
+      '<div class="row"><button type="button" id="cfgTestar">Testar voz</button><button type="button" id="cfgPadrao">Voz padrão</button></div>' +
+      '<p>Dica: para um tom de mordomo digital, escolha uma voz masculina e deixe o tom baixo. As vozes disponíveis dependem do seu celular — no iPhone, baixe vozes extras em Ajustes › Acessibilidade › Conteúdo Falado › Vozes.</p>';
+    var c2 = document.createElement('div'); c2.className = 'card';
+    c2.innerHTML = '<h3>Como devo te chamar</h3><label>Nome ou tratamento<input type="text" id="cfgNome" placeholder="Francisco, senhor..."></label>';
+    var c3 = document.createElement('div'); c3.className = 'card';
+    c3.innerHTML = '<h3>Avisos</h3><p>Permita notificações para o Jarvis avisar na hora dos lembretes e atividades (com o app aberto ou em segundo plano).</p><div class="row"><button type="button" id="cfgNotif">Permitir notificações</button></div>';
+    var c4 = document.createElement('div'); c4.className = 'card';
+    c4.innerHTML = '<h3>Instalar no celular</h3><p>Android (Chrome): menu ⋮ › "Instalar app". iPhone (Safari): botão Compartilhar › "Adicionar à Tela de Início". O Jarvis abre em tela cheia como um app.</p><div class="row"><button type="button" id="cfgInstalar" style="display:none">Instalar agora</button></div>';
+    [c1, c2, c3, c4].forEach(function(c){ settingsView.appendChild(c); });
+
+    var sel = c1.querySelector('#cfgVoz');
+    var vozes = synth ? synth.getVoices() : [];
+    vozes = vozes.slice().sort(function(a, b){ return pontuacaoVoz(b) - pontuacaoVoz(a); });
+    var opAuto = document.createElement('option'); opAuto.value = ''; opAuto.textContent = 'Automática (melhor voz masculina em português)';
+    sel.appendChild(opAuto);
+    vozes.forEach(function(v){ var o = document.createElement('option'); o.value = v.name; o.textContent = v.name + ' (' + v.lang + ')'; sel.appendChild(o); });
+    sel.value = cfg.voz || '';
+    sel.addEventListener('change', function(){ cfg.voz = sel.value; salvarCfg(); carregarVoz(); });
+    var tom = c1.querySelector('#cfgTom'), vel = c1.querySelector('#cfgVel');
+    tom.value = cfg.tom; vel.value = cfg.velocidade;
+    tom.addEventListener('input', function(){ cfg.tom = parseFloat(tom.value); salvarCfg(); });
+    vel.addEventListener('input', function(){ cfg.velocidade = parseFloat(vel.value); salvarCfg(); });
+    c1.querySelector('#cfgTestar').addEventListener('click', function(){ exprResposta = 'feliz'; falar('Bom dia, Francisco. Todos os sistemas estão funcionando.'); });
+    c1.querySelector('#cfgPadrao').addEventListener('click', function(){ cfg.voz = ''; cfg.tom = 0.62; cfg.velocidade = 0.94; salvarCfg(); carregarVoz(); renderAjustes(); });
+    var nome = c2.querySelector('#cfgNome'); nome.value = cfg.nome;
+    nome.addEventListener('change', function(){ cfg.nome = nome.value.trim() || 'Francisco'; salvarCfg(); });
+    c3.querySelector('#cfgNotif').addEventListener('click', function(){
+      if (!('Notification' in window)){ falar('Este navegador não suporta notificações. Instale o Jarvis na tela inicial e tente de novo.'); return; }
+      Notification.requestPermission().then(function(r){ falar(r === 'granted' ? 'Notificações ativadas.' : 'Tudo bem, sem notificações por enquanto.'); });
+    });
+    var bi = c4.querySelector('#cfgInstalar');
+    if (eventoInstalar){ bi.style.display = ''; bi.addEventListener('click', function(){ eventoInstalar.prompt(); eventoInstalar = null; bi.style.display = 'none'; }); }
+  }
+  var eventoInstalar = null;
+  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); eventoInstalar = e; if (settingsView.classList.contains('active')) renderAjustes(); });
+  if ('serviceWorker' in navigator && location.protocol !== 'file:'){
+    window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
   }
 
   // ---------- fala (texto -> voz) ----------
@@ -1088,6 +1887,10 @@ body{
     if (!synth) return null;
     var vozes = synth.getVoices() || [];
     if (!vozes.length) return null;
+    if (cfg.voz){
+      var escolhida = vozes.filter(function(v){ return v.name === cfg.voz; })[0];
+      if (escolhida) return escolhida;
+    }
     // primeiro só considera vozes em português; só usa outra língua se o aparelho não tiver nenhuma
     var candidatas = vozes.filter(function(v){ return v.lang && v.lang.toLowerCase().indexOf('pt') === 0; });
     if (!candidatas.length) candidatas = vozes;
@@ -1109,19 +1912,35 @@ body{
     synth.addEventListener('voiceschanged', carregarVoz);
   }
 
-  function falar(texto){
+  function falar(texto, expr){
+    texto = texto.replace(/Francisco/g, cfg.nome || 'Francisco');
+    if (!expr){ expr = exprResposta || 'neutro'; exprResposta = null; }
     addLine('Jarvis', texto);
-    if (!synth){ return; }
+    setExpressao(expr);
+    if (!synth){ setExpressao(expr, 4000); return; }
     if (!vozPronta) carregarVoz();
     var u = new SpeechSynthesisUtterance(texto);
     u.lang = (vozEscolhida && vozEscolhida.lang) ? vozEscolhida.lang : 'pt-BR';
     if (vozEscolhida) u.voice = vozEscolhida;
-    u.rate = 0.94;
-    u.pitch = 0.62;
-    u.onstart = function(){ core.classList.add('speaking'); setStatus('Falando', true); };
-    u.onend = function(){ core.classList.remove('speaking'); setStatus('Em espera', false); hint.textContent='Toque no botão e fale com o Jarvis'; };
+    u.rate = cfg.velocidade || 0.94;
+    u.pitch = (cfg.tom !== undefined) ? cfg.tom : 0.62;
+    u.onstart = function(){ core.classList.add('speaking'); setStatus('Falando', true); animarBoca(true); };
+    u.onend = function(){
+      core.classList.remove('speaking'); animarBoca(false);
+      setStatus('Em espera', false); hint.textContent='Toque no botão e fale com o Jarvis';
+      setExpressao(exprAtual === 'dormindo' ? 'dormindo' : exprAtual, 2500);
+    };
     synth.cancel();
     synth.speak(u);
+    // alguns celulares não disparam onend; garante que a expressão volta ao normal
+    setTimeout(function(){ if (!synth.speaking){ animarBoca(false); core.classList.remove('speaking'); } }, Math.max(4000, texto.length * 90));
+  }
+
+  function responder(fala){
+    addLine('Você', fala);
+    exprResposta = null;
+    var resposta = responderA(fala);
+    falar(resposta, expressaoPara(fala, resposta));
   }
 
   // ---------- voz -> texto ----------
@@ -1143,28 +1962,27 @@ body{
       recognizing = true;
       micBtn.classList.add('on');
       core.classList.add('listening');
+      setExpressao('ouvindo');
       setStatus('Ouvindo', true);
       hint.textContent = 'Pode falar...';
     };
 
     recognition.onresult = function(e){
-      var texto = e.results[0][0].transcript;
-      addLine('Você', texto);
-      var resposta = responderA(texto);
-      falar(resposta);
+      responder(e.results[0][0].transcript);
     };
 
     recognition.onerror = function(e){
       hint.textContent = (e.error === 'not-allowed')
         ? 'Permissão de microfone negada. Ative nas configurações do navegador.'
         : 'Não entendi, tenta de novo.';
+      setExpressao('confuso', 2500);
     };
 
     recognition.onend = function(){
       recognizing = false;
       micBtn.classList.remove('on');
       core.classList.remove('listening');
-      if (!core.classList.contains('speaking')){ setStatus('Em espera', false); }
+      if (!core.classList.contains('speaking')){ setStatus('Em espera', false); if (exprAtual === 'ouvindo') setExpressao('neutro'); }
     };
 
     micBtn.addEventListener('click', function(){
@@ -1183,8 +2001,7 @@ body{
     var texto = typeInput.value.trim();
     if (!texto) return;
     typeInput.value = '';
-    addLine('Você', texto);
-    falar(responderA(texto));
+    responder(texto);
   });
 })();
 </script>
