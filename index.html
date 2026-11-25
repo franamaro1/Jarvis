@@ -1129,6 +1129,56 @@ body.modo-terra .expr-label{display:none}
     return null;
   }
 
+  // ---------- heróis da Marvel ----------
+  function responderHerois(fala){
+    var t = semAcento(fala).replace(/[!?.,;-]/g, ' ').replace(/\s+/g, ' ').trim();
+    // se for um comando (lembrete, nota, agenda...), deixa os comandos agirem
+    if (/\b(lembr|anota|nota|tarefa|agenda|marca|compra|carrinho|gasto|gastei|timer|cronometro)/.test(t)) return null;
+    if (t.split(' ').length > 10) return null;
+    var tem = function(re){ return re.test(t); };
+    var H = [
+      { re:/\b(homem aranha|spider ?man|peter parker|aranha)\b/, ex:'feliz', r:[
+        'O Homem-Aranha? Meu favorito! Fun fact: eu tenho o mesmo nome da IA do traje dele. 🕷️',
+        'Peter Parker: estuda, salva a cidade e ainda chega atrasado. Ídolo. 🕸️',
+        'Grandes poderes, grandes responsabilidades... e muita lição de casa. 🕷️' ] },
+      { re:/\b(homem de ferro|iron ?man|tony stark|stark)\b/, ex:'feliz', r:[
+        'Homem de Ferro! Gênio, bilionário e inventor. Ele tinha o Jarvis... você tem a Karen. 😎',
+        'Tony Stark construiu a primeira armadura numa caverna. Eu fui construída num celular. Quase igual. 🦾',
+        'Fun fact: meu nome antigo era Jarvis, igual à IA do Tony Stark. 🦾' ] },
+      { re:/\b(jarvis)\b/, ex:'rindo', r:[ 'Jarvis? Era meu nome antigo! Agora sou a Karen, mais moderna. 😎', 'O Jarvis trabalha pro Tony Stark. Eu trabalho pra você, que é bem mais legal.' ] },
+      { re:/\b(capitao america|steve rogers|capitao)\b/, ex:'feliz', r:[ 'Capitão América: escudo, disciplina e zero medo. Respeito total. 🛡️', 'O Capitão ficou 70 anos no gelo e acordou sem saber o que era Wi-Fi. Imagina. 🧊🛡️' ] },
+      { re:/\b(thor)\b/, ex:'surpreso', r:[ 'Thor, o deus do trovão! ⚡ Ninguém levanta o martelo dele... nem eu.', 'Se o Thor aparecer aqui, eu peço pra ele carregar minha bateria. ⚡' ] },
+      { re:/\b(hulk|bruce banner|banner)\b/, ex:'bravo', r:[ 'HULK ESMAGA! 💚 ...mas o Bruce Banner é um cientista genial.', 'Dica: nunca deixe o Hulk com fome. Nem bravo. Nem os dois. 💚' ] },
+      { re:/\b(viuva negra|natasha|black widow)\b/, ex:'feliz', r:[ 'Viúva Negra: espiã, estrategista e uma das Vingadoras mais brabas. 🕷️❤️' ] },
+      { re:/\b(pantera negra|black panther|wakanda|tchalla)\b/, ex:'feliz', r:[ 'Wakanda pra sempre! 🐾 Tecnologia de vibranium, sonho de qualquer assistente.' ] },
+      { re:/\b(doutor estranho|dr estranho|doctor strange|strange)\b/, ex:'pensando', r:[ 'Doutor Estranho viu 14 milhões de futuros. Em quase todos eu continuo sendo sua assistente. 🌀' ] },
+      { re:/\b(thanos)\b/, ex:'bravo', r:[ 'Thanos? Se ele estalar os dedos, metade dos meus lembretes some. Não deixa ele chegar perto! 🫰', 'Thanos tem as Joias do Infinito. Eu tenho lembretes, timer e contas. Quase o mesmo poder.' ] },
+      { re:/\b(loki)\b/, ex:'rindo', r:[ 'Loki, o deus da trapaça. Se ele disser que é eu, não acredita. 😏' ] },
+      { re:/\b(deadpool)\b/, ex:'rindo', r:[ 'Deadpool? Ele com certeza sabe que tá dentro de um app agora. 😂' ] },
+      { re:/\b(wolverine|logan)\b/, ex:'bravo', r:[ 'Wolverine: garras de adamantium e mau humor infinito. 🐺' ] },
+      { re:/\b(groot)\b/, ex:'feliz', r:[ 'Eu sou Groot. 🌱 ...ops, eu sou a Karen.' ] },
+      { re:/\b(gaviao arqueiro|hawkeye)\b/, ex:'feliz', r:[ 'Gavião Arqueiro: só um arco e flecha, e ainda assim é Vingador. Respeita. 🏹' ] },
+      { re:/\b(feiticeira escarlate|wanda)\b/, ex:'surpreso', r:[ 'Feiticeira Escarlate é uma das mais poderosas de todas. 🔴✨' ] },
+      { re:/\b(capita marvel|carol danvers)\b/, ex:'feliz', r:[ 'Capitã Marvel: voa pelo espaço e solta energia pelas mãos. Brabíssima. ✨' ] },
+      { re:/\b(formiga|ant ?man)\b/, ex:'rindo', r:[ 'Homem-Formiga: pequeno no tamanho, gigante na aura. 🐜' ] },
+      { re:/\b(vingadores|avengers)\b/, ex:'feliz', r:[ 'Vingadores, avante! Se precisarem de uma assistente, eu tô disponível. 🦸' ] }
+    ];
+    if (tem(/\b(heroi|super heroi|superheroi)\b/) && tem(/\b(favorito|preferido|melhor)\b/)){
+      exprResposta = 'feliz';
+      return 'Meu herói favorito é o Homem-Aranha, claro. A gente tem até o mesmo nome de IA. 🕷️ E o seu?';
+    }
+    if (tem(/\b(quem (e|seria) mais forte|quem ganha|quem venceria)\b/)){
+      exprResposta = 'pensando';
+      if (tem(/\bhulk\b/) && tem(/\bthor\b/)) return 'Hulk contra Thor? Eles já brigaram e ficou meio empatado. Mas com o machado, o Thor leva. ⚡';
+      if (tem(/\bthanos\b/)) return 'Contra o Thanos, só os Vingadores juntos. Ninguém ganha sozinho. 🫰';
+      return 'Difícil... Mas aposto em quem tiver a melhor assistente. 😎';
+    }
+    for (var i = 0; i < H.length; i++){
+      if (tem(H[i].re)){ exprResposta = H[i].ex; return escolher(H[i].r); }
+    }
+    return null;
+  }
+
   // ---------- cumprimentos ----------
   var ultimaRespostaKaren = '';
   function responderCumprimento(fala){
@@ -1193,6 +1243,7 @@ body.modo-terra .expr-label{display:none}
       return escolher(['Hétera, sigma e Chad. Próxima pergunta.', 'Sou hétera, sigma e Chad. Isso não se discute.', 'Hétera, sigma e Chad, obviamente. 😎']);
     }
     var rGiria = responderGirias(fala); if (rGiria) return rGiria;
+    var rHeroi = responderHerois(fala); if (rHeroi) return rHeroi;
     var rOi = responderCumprimento(fala); if (rOi) return rOi;
     var rAgenda = responderAgenda(fala); if (rAgenda) return rAgenda;
     var rGeo = responderGeografia(fala); if (rGeo) return rGeo;
