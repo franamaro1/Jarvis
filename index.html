@@ -2180,7 +2180,11 @@ body.modo-terra .expr-label{display:none}
       '<label>Endereço do cofre<input type="url" id="cfgIaUrl" placeholder="https://karen-ia.....workers.dev" autocomplete="off" autocapitalize="off" spellcheck="false"></label>' +
       '<label>Senha<input type="password" id="cfgIaSenha" placeholder="a senha do cofre" autocomplete="off"></label>' +
       '<div class="row"><button type="button" id="cfgIaTestar">Testar IA</button><button type="button" id="cfgIaDesligar">Desligar IA</button></div>' +
-      '<p id="cfgIaStatus"></p>';
+      '<p id="cfgIaStatus"></p>' +
+      '<h3 style="margin-top:14px">IA no celular (grátis)</h3>' +
+      '<p>Não precisa de conta. Baixa uns 700 MB uma vez só (use o Wi-Fi). É menos esperta que a de cima e precisa de iPhone com iOS 26 ou mais novo.</p>' +
+      '<div class="row"><button type="button" id="cfgLocalBaixar">Baixar IA no celular</button><button type="button" id="cfgLocalApagar">Apagar</button></div>' +
+      '<p id="cfgLocalStatus"></p>';
     [c1, c2, c5, c3, c4].forEach(function(c){ settingsView.appendChild(c); });
     var iaUrl = c5.querySelector('#cfgIaUrl'), iaSenha = c5.querySelector('#cfgIaSenha'), iaStatus = c5.querySelector('#cfgIaStatus');
     iaUrl.value = cfg.iaUrl || ''; iaSenha.value = cfg.iaSenha || '';
@@ -2196,6 +2200,24 @@ body.modo-terra .expr-label{display:none}
       iaStatus.textContent = 'Pedido enviado! Veja a resposta na aba Conversa.';
     });
     c5.querySelector('#cfgIaDesligar').addEventListener('click', function(){ iaUrl.value = ''; iaSenha.value = ''; salvarIa(); });
+    var lStatus = c5.querySelector('#cfgLocalStatus'), lBaixar = c5.querySelector('#cfgLocalBaixar');
+    function statusLocal(){
+      if (!suportaIALocal()) lStatus.textContent = 'Status: esse navegador não suporta (precisa de WebGPU, iOS 26+).';
+      else lStatus.textContent = cfg.iaLocal ? 'Status: IA do celular pronta ✅' + (cfg.iaUrl ? ' (a de cima tem prioridade)' : '') : 'Status: não baixada';
+    }
+    statusLocal();
+    lBaixar.addEventListener('click', function(){
+      if (!suportaIALocal()){ statusLocal(); return; }
+      lBaixar.disabled = true;
+      lStatus.textContent = 'Começando o download…';
+      carregarIALocal(function(p){ lStatus.textContent = 'Baixando: ' + Math.round((p.progress || 0) * 100) + '% — deixe a Karen aberta.'; })
+        .then(function(){ cfg.iaLocal = true; salvarCfg(); lBaixar.disabled = false; statusLocal(); exprResposta = 'feliz'; falar('Pronto! Agora eu tenho uma IA dentro do celular.'); })
+        .catch(function(e){ console.log(e); lBaixar.disabled = false; lStatus.textContent = 'Não deu certo: ' + (e && e.message ? e.message.slice(0, 120) : 'erro') + '. Tente de novo no Wi-Fi.'; });
+    });
+    c5.querySelector('#cfgLocalApagar').addEventListener('click', function(){
+      cfg.iaLocal = false; salvarCfg();
+      apagarIALocal().then(function(){ lStatus.textContent = 'IA do celular apagada. Espaço liberado.'; });
+    });
 
     var sel = c1.querySelector('#cfgVoz');
     var vozes = synth ? synth.getVoices() : [];
@@ -2332,6 +2354,45 @@ body.modo-terra .expr-label{display:none}
       .catch(function(){ terminarIA('Não consegui falar com a minha IA. Confere a internet e tenta de novo.'); })
       .then(function(){ clearTimeout(limite); });
   }
+  // ---------- IA dentro do celular (WebLLM, grátis, sem conta) ----------
+  var IA_LOCAL_MODELO = 'Llama-3.2-1B-Instruct-q4f16_1-MLC';
+  var IA_LOCAL_LIB = 'https://esm.run/@mlc-ai/web-llm@0.2';
+  var motorLocal = null, carregandoLocal = null;
+  function suportaIALocal(){ return !!(navigator.gpu); }
+  function carregarIALocal(aoProgresso){
+    if (motorLocal) return Promise.resolve(motorLocal);
+    if (carregandoLocal) return carregandoLocal;
+    carregandoLocal = import(IA_LOCAL_LIB).then(function(webllm){
+      return webllm.CreateMLCEngine(IA_LOCAL_MODELO, { initProgressCallback: function(p){ if (aoProgresso) aoProgresso(p); } });
+    }).then(function(m){ motorLocal = m; carregandoLocal = null; return m; },
+            function(e){ carregandoLocal = null; throw e; });
+    return carregandoLocal;
+  }
+  function perguntarIALocal(){
+    if (iaOcupada) return;
+    if (!suportaIALocal()){ terminarIA('Esse celular não consegue rodar a IA. Precisa de um iPhone com iOS 26 ou mais novo.'); return; }
+    iaOcupada = true;
+    setExpressao('pensando'); setStatus('Pensando', true);
+    hint.textContent = motorLocal ? 'Pensando…' : 'Acordando a IA… (pode levar uns segundos)';
+    var nome = cfg.nome || 'Francisco';
+    var sistema = 'Você é a Karen, assistente de voz simpática do ' + nome + ', um estudante. Responda SEMPRE em português do Brasil, em no máximo 2 frases curtas e simples, porque a resposta será falada. Fale no feminino. Sem listas, sem markdown. Conteúdo apropriado para a idade. Se não souber, diga que não sabe.';
+    var msgs = [{ role:'system', content: sistema }].concat(historicoConversa.slice(-8).map(function(m){ return { role: m.papel === 'karen' ? 'assistant' : 'user', content: m.texto }; }));
+    while (msgs.length > 1 && msgs[1].role !== 'user') msgs.splice(1, 1);
+    carregarIALocal(function(p){ hint.textContent = 'Acordando a IA… ' + Math.round((p.progress || 0) * 100) + '%'; })
+      .then(function(m){ hint.textContent = 'Pensando…'; return m.chat.completions.create({ messages: msgs, max_tokens: 160, temperature: 0.6 }); })
+      .then(function(r){
+        var txt = (r && r.choices && r.choices[0] && r.choices[0].message && r.choices[0].message.content || '').trim();
+        terminarIA(txt || 'Hmm, me deu um branco. Pergunta de novo?');
+      })
+      .catch(function(e){ console.log(e); terminarIA('Minha IA do celular travou. ' + respostaNaoSei()); });
+  }
+  function apagarIALocal(){
+    motorLocal = null;
+    var p = Promise.resolve();
+    if (window.caches) p = caches.keys().then(function(ks){ return Promise.all(ks.filter(function(k){ return /webllm|mlc|tvmjs/i.test(k); }).map(function(k){ return caches.delete(k); })); });
+    return p.then(function(){ try { indexedDB.deleteDatabase('webllm/model'); indexedDB.deleteDatabase('webllm/config'); indexedDB.deleteDatabase('webllm/wasm'); } catch(e){} });
+  }
+
   function terminarIA(resposta){
     iaOcupada = false;
     resposta = String(resposta).replace(/[*_#`]/g, '');
@@ -2356,6 +2417,7 @@ body.modo-terra .expr-label{display:none}
     var resposta = responderA(trocarTuPorVoce(fala));
     if (resposta === SEM_RESPOSTA){
       if (cfg.iaUrl && cfg.iaSenha){ perguntarIA(fala); return; }
+      if (cfg.iaLocal){ perguntarIALocal(); return; }
       resposta = respostaNaoSei();
     }
     ultimaRespostaKaren = resposta;
