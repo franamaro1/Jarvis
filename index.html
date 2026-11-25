@@ -1072,6 +1072,7 @@ body.modo-terra .expr-label{display:none}
       return escolher(['SIX SEVEEEEN! 🤲🤲', 'Seis... SETEEEE! 🤲', '6️⃣7️⃣ Não tem como fugir do six seven.', 'Six seven. Eu nem sei o que significa, mas tô junto. 🤲']);
     }
     if (!curta) return null;
+    if (tem(/\b(sua aura|aura sua|quanto de aura voce tem|quanta aura voce tem)\b/)){ exprResposta = 'feliz'; return escolher(['Minha aura? Infinita. ✨🗿', 'Minha aura tá em +999 mil e subindo. 😎']); }
     if (tem(/\bvoce (farma|farmou|ta farmando|esta farmando|tem) (muita |muito )?aura\b/)){ exprResposta = 'feliz'; return escolher(['Eu? Farmo aura 24 horas por dia, até quando tô em espera. 😎', 'Farmo aura até dormindo. Minha aura é infinita. ✨', 'Claro que farmo. Cada resposta minha é +1000 de aura. 🗿']); }
     if (tem(/\b(eu farmo aura|eu farmei aura|to farmando aura|eu farmo muita aura)\b/)){ exprResposta = 'feliz'; return 'Farma mesmo! +' + escolher(['1000', '6700', '9999']) + ' de aura confirmados. 😎'; }
     if (tem(/\b(farmar aura|farma aura|farmando aura|farmei aura)\b/)){ exprResposta = 'feliz'; return 'Farmou mesmo! +' + escolher(['1000', '6700', '9999']) + ' de aura pra você. 😎'; }
