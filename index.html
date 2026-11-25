@@ -1539,6 +1539,10 @@ body.modo-terra .expr-label{display:none}
     if (t.indexOf('obrigad') !== -1){
       return escolher(['De nada. Estou aqui se precisar.', 'Disponha! Qualquer coisa é só chamar.']);
     }
+    return SEM_RESPOSTA;
+  }
+  var SEM_RESPOSTA = '__sem_resposta__';
+  function respostaNaoSei(){
     return escolher([
       'Ainda estou aprendendo a responder isso. Mas já posso guardar lembretes, gastos, tarefas, notas, itens no carrinho e iniciar um timer.',
       'Essa eu ainda não sei. Mas posso guardar lembretes, tarefas, gastos, notas e o que você quer comprar, contar uma piada ou uma curiosidade, e até fazer contas simples.',
@@ -2170,7 +2174,28 @@ body.modo-terra .expr-label{display:none}
     c3.innerHTML = '<h3>Avisos</h3><p>Permita notificações para a Karen avisar na hora dos lembretes e atividades (com o app aberto ou em segundo plano).</p><div class="row"><button type="button" id="cfgNotif">Permitir notificações</button></div>';
     var c4 = document.createElement('div'); c4.className = 'card';
     c4.innerHTML = '<h3>Instalar no celular</h3><p>Android (Chrome): menu ⋮ › "Instalar app". iPhone (Safari): botão Compartilhar › "Adicionar à Tela de Início". A Karen abre em tela cheia como um app.</p><div class="row"><button type="button" id="cfgInstalar" style="display:none">Instalar agora</button></div>';
-    [c1, c2, c3, c4].forEach(function(c){ settingsView.appendChild(c); });
+    var c5 = document.createElement('div'); c5.className = 'card';
+    c5.innerHTML = '<h3>Inteligência artificial</h3>' +
+      '<p>Quando a Karen não souber responder, ela pergunta para uma IA de verdade. Peça para um adulto configurar seguindo o guia CONFIGURAR-IA.md.</p>' +
+      '<label>Endereço do cofre<input type="url" id="cfgIaUrl" placeholder="https://karen-ia.....workers.dev" autocomplete="off" autocapitalize="off" spellcheck="false"></label>' +
+      '<label>Senha<input type="password" id="cfgIaSenha" placeholder="a senha do cofre" autocomplete="off"></label>' +
+      '<div class="row"><button type="button" id="cfgIaTestar">Testar IA</button><button type="button" id="cfgIaDesligar">Desligar IA</button></div>' +
+      '<p id="cfgIaStatus"></p>';
+    [c1, c2, c5, c3, c4].forEach(function(c){ settingsView.appendChild(c); });
+    var iaUrl = c5.querySelector('#cfgIaUrl'), iaSenha = c5.querySelector('#cfgIaSenha'), iaStatus = c5.querySelector('#cfgIaStatus');
+    iaUrl.value = cfg.iaUrl || ''; iaSenha.value = cfg.iaSenha || '';
+    iaStatus.textContent = cfg.iaUrl && cfg.iaSenha ? 'Status: IA ligada ✅' : 'Status: IA desligada';
+    function salvarIa(){ cfg.iaUrl = iaUrl.value.trim(); cfg.iaSenha = iaSenha.value; salvarCfg(); iaStatus.textContent = cfg.iaUrl && cfg.iaSenha ? 'Status: IA ligada ✅' : 'Status: IA desligada'; }
+    iaUrl.addEventListener('change', salvarIa); iaSenha.addEventListener('change', salvarIa);
+    c5.querySelector('#cfgIaTestar').addEventListener('click', function(){
+      salvarIa();
+      if (!cfg.iaUrl || !cfg.iaSenha){ iaStatus.textContent = 'Preencha o endereço e a senha primeiro.'; return; }
+      iaStatus.textContent = 'Testando…';
+      guardarHistorico('voce', 'Diga oi em uma frase curta para confirmar que a IA está funcionando.');
+      perguntarIA('teste');
+      iaStatus.textContent = 'Pedido enviado! Veja a resposta na aba Conversa.';
+    });
+    c5.querySelector('#cfgIaDesligar').addEventListener('click', function(){ iaUrl.value = ''; iaSenha.value = ''; salvarIa(); });
 
     var sel = c1.querySelector('#cfgVoz');
     var vozes = synth ? synth.getVoices() : [];
@@ -2275,6 +2300,47 @@ body.modo-terra .expr-label{display:none}
     setTimeout(function(){ if (!synth.speaking){ animarBoca(false); core.classList.remove('speaking'); } }, Math.max(4000, texto.length * 90));
   }
 
+  // ---------- IA de verdade (pelo cofre no Cloudflare) ----------
+  var historicoConversa = [];
+  function guardarHistorico(papel, texto){
+    historicoConversa.push({ papel: papel, texto: String(texto) });
+    if (historicoConversa.length > 12) historicoConversa = historicoConversa.slice(-12);
+  }
+  var iaOcupada = false;
+  function perguntarIA(fala){
+    if (iaOcupada) return;
+    iaOcupada = true;
+    setExpressao('pensando');
+    setStatus('Pensando', true);
+    hint.textContent = 'Pensando…';
+    var controle = ('AbortController' in window) ? new AbortController() : null;
+    var limite = setTimeout(function(){ if (controle) controle.abort(); }, 20000);
+    fetch(cfg.iaUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ senha: cfg.iaSenha, nome: cfg.nome || 'Francisco', mensagens: historicoConversa }),
+      signal: controle ? controle.signal : undefined
+    }).then(function(r){ return r.json().then(function(d){ return { ok: r.ok, d: d }; }); })
+      .then(function(x){
+        var resposta;
+        if (x.ok && x.d.resposta) resposta = x.d.resposta;
+        else if (x.d && x.d.erro === 'senha') resposta = 'A senha da minha IA tá errada. Confere nos Ajustes.';
+        else if (x.d && x.d.erro === 'origem') resposta = 'Minha IA só funciona no site oficial da Karen.';
+        else resposta = 'Minha IA não respondeu direito agora. ' + respostaNaoSei();
+        terminarIA(resposta);
+      })
+      .catch(function(){ terminarIA('Não consegui falar com a minha IA. Confere a internet e tenta de novo.'); })
+      .then(function(){ clearTimeout(limite); });
+  }
+  function terminarIA(resposta){
+    iaOcupada = false;
+    resposta = String(resposta).replace(/[*_#`]/g, '');
+    ultimaRespostaKaren = resposta;
+    guardarHistorico('karen', resposta);
+    exprResposta = null;
+    falar(resposta, expressaoPara('', resposta));
+  }
+
   // "tu", "vc", "cê" e "contigo" viram "você" pra Karen entender igual
   function trocarTuPorVoce(fala){
     return String(fala)
@@ -2286,8 +2352,14 @@ body.modo-terra .expr-label{display:none}
   function responder(fala){
     addLine('Você', fala);
     exprResposta = null;
+    guardarHistorico('voce', fala);
     var resposta = responderA(trocarTuPorVoce(fala));
+    if (resposta === SEM_RESPOSTA){
+      if (cfg.iaUrl && cfg.iaSenha){ perguntarIA(fala); return; }
+      resposta = respostaNaoSei();
+    }
     ultimaRespostaKaren = resposta;
+    guardarHistorico('karen', resposta);
     falar(resposta, expressaoPara(fala, resposta));
   }
 
