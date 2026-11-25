@@ -1096,6 +1096,33 @@ body.modo-terra .expr-label{display:none}
     if (tem(/\b(tralalero|tralala)\b/)){ exprResposta = 'rindo'; return 'Tralalero tralalá! 🦈👟'; }
     if (tem(/\b(tung tung|sahur)\b/)){ exprResposta = 'rindo'; return 'Tung tung tung tung sahur! 🪵'; }
     if (tem(/\b(aff+|af+ vei|aff vei)\b/)){ exprResposta = 'confuso'; return 'Aff, véi... o que eu fiz agora?'; }
+    var cru = semAcento(fala).replace(/[!?.,;]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (/^(gg|ggwp|gg wp|good game|gg ez|gg izi|ggez)$/.test(t)){ exprResposta = 'feliz'; return escolher(['GG! Bem jogado. 🎮', 'GG WP! Revanche quando quiser.', 'GG! Essa foi épica. 🏆']); }
+    if (/^(w|dub|isso foi (um )?w|foi (um )?w|grande w|big w)$/.test(t)){ exprResposta = 'feliz'; return escolher(['W gigante! 🏆', 'Isso é um W, sem dúvida.', 'W! +1000 de aura.']); }
+    if (/^(l|isso foi (um )?l|foi (um )?l|tomei (um )?l|grande l|big l)$/.test(t)){ exprResposta = 'triste'; return escolher(['L... mas amanhã vira W.', 'Esse foi um L, não vou mentir. 😬']); }
+    if (/\b(vem ai|ta vindo ai)\b/.test(cru) && cru.split(' ').length <= 5){ exprResposta = 'surpreso'; return escolher(['Vem aí... e eu tô pronta! 👀', 'Vem aí?! Agora fiquei curiosa. 👀']); }
+    if (tem(/\b(sextou|sextouu+)\b/)){
+      var dia = new Date().getDay();
+      exprResposta = dia === 5 ? 'rindo' : 'confuso';
+      if (dia === 5) return escolher(['SEXTOOOU! 🎉 Bora descansar.', 'Sextou com S de sigma! 🎉']);
+      if (dia === 4) return 'Calma, hoje ainda é quinta. Mas sextou amanhã! 👀';
+      return 'Sextou? Hoje é ' + new Date().toLocaleDateString('pt-BR', { weekday:'long' }) + '... mas a energia tá valendo. 😂';
+    }
+    if (tem(/\b(aesthetic|estetico|vibe aesthetic)\b/)){ exprResposta = 'feliz'; return escolher(['Muito aesthetic. ✨', 'Aesthetic demais, aprovado. ✨']); }
+    if (tem(/\b(boomer|ok boomer|voce e boomer)\b/)){ exprResposta = 'rindo'; return escolher(['Boomer? Eu fui atualizada ontem! 😤', 'Ok, boomer. 😂']); }
+    if (tem(/\b(old|muito old|isso e old|ta old)\b/)){ exprResposta = 'rindo'; return 'Old demais. Isso é da época do Orkut. 👴'; }
+    if (tem(/\b(fomo)\b/)){ exprResposta = 'pensando'; return 'FOMO? Relaxa, se acontecer alguma coisa eu te lembro. 😉'; }
+    if (tem(/\b(treta|deu treta|que treta)\b/)){ exprResposta = 'surpreso'; return escolher(['Treta?! Conta tudo. 🍿', 'Eita, deu treta. Pega a pipoca. 🍿']); }
+    if (tem(/\b(perrengue|passei perrengue|que perrengue)\b/)){ exprResposta = 'triste'; return 'Perrengue faz parte, mas você tanka. 💪'; }
+    if (tem(/\b(zueira|zoeira|e zueira|so zueira)\b/)){ exprResposta = 'rindo'; return 'A zueira não tem limites. 😂'; }
+    if (tem(/\b(ranco|que ranco|peguei ranco)\b/)){ exprResposta = 'bravo'; return 'Ranço total. Entendo perfeitamente. 😤'; }
+    if (tem(/\b(lacrou|lacrei|lacrando|mitou|mitei|mitando)\b/)){ exprResposta = 'feliz'; return escolher(['Lacrou! 💅', 'Mitou demais! +1000 de aura.']); }
+    if (tem(/\b(brabo|braba|brabissimo|insano|insana|surreal)\b/)){ exprResposta = 'surpreso'; return escolher(['Brabo demais! 🔥', 'Insano! 🔥', 'Surreal, não tem explicação.']); }
+    if (tem(/\b(mewing|mew)\b/)){ exprResposta = 'pensando'; return 'Mewing ativado. 🤫🧏 Não posso falar agora.'; }
+    if (tem(/\b(looksmaxxing|looksmax|looksmaxx)\b/)){ exprResposta = 'feliz'; return 'Looksmaxxing nível máximo. Meu visual já é 10/10. ✨'; }
+    if (tem(/\b(brainrot|brain rot)\b/)){ exprResposta = 'confuso'; return 'Brainrot detectado. Tralalero tralalá, tung tung sahur... pronto, meu cérebro derreteu. 🫠'; }
+    if (tem(/\b(npc|voce e npc|e npc)\b/)){ exprResposta = 'bravo'; return escolher(['NPC? Eu tenho falas próprias, tá? 😤', 'NPC é quem não tem uma Karen.']); }
+    if (tem(/\b(rizz|tem rizz|meu rizz|seu rizz)\b/)){ exprResposta = 'apaixonado'; return escolher(['Rizz infinito. 😏', 'Meu rizz é de outro sistema solar. 😏']); }
     if (tem(/\b(mogar|mogou|mogado)\b/)){ exprResposta = 'feliz'; return 'Mogou geral. Ninguém segura. 🗿'; }
     return null;
   }
