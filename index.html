@@ -984,6 +984,111 @@ body.modo-terra .expr-label{display:none}
     'Vênus é o único planeta do sistema solar que gira no sentido contrário ao dos outros.'
   ];
 
+  // ---------- jogos ----------
+  var jogo = null; // { tipo, ... }
+  var placarPPT = { voce:0, karen:0 };
+  function responderJogos(fala){
+    var t = semAcento(fala).replace(/[!?.,;]/g, ' ').replace(/\b(karen)\b/g, ' ').replace(/\s+/g, ' ').trim();
+    var tem = function(re){ return re.test(t); };
+    var querJogar = tem(/\b(jogar|jogo|joga|brincar|bora|vamos|partida|de novo|outra)\b/);
+
+    if (jogo && tem(/^(parar|para|sair|chega|cansei|acabou|fim|desisto|nao quero mais( jogar)?|para de jogar|parar de jogar)$/)){
+      var tipoAntigo = jogo.tipo; var segredo = jogo.numero; jogo = null; exprResposta = 'neutro';
+      if (tipoAntigo === 'numero') return 'Tudo bem! O número era ' + segredo + '. Quando quiser jogar de novo, é só pedir.';
+      if (tipoAntigo === 'ppt') return 'Fim de jogo! Placar final: você ' + placarPPT.voce + ' x ' + placarPPT.karen + ' Karen. GG! 🎮';
+      return 'Beleza, paramos o jogo. GG! 🎮';
+    }
+
+    // lista de jogos
+    if (tem(/\b(que|quais) (jogos?|brincadeiras?)\b/) || tem(/^(vamos jogar|bora jogar|quero jogar|vamos brincar|jogar|joga comigo|vamos jogar algo|vamos jogar alguma coisa|bora jogar algo)$/)){
+      exprResposta = 'feliz';
+      return 'Bora! Eu sei jogar: pedra, papel e tesoura; adivinhar o número; par ou ímpar; cara ou coroa; e rolar dado. Qual você quer? 🎮';
+    }
+
+    // ---- pedra, papel e tesoura ----
+    var escolhaPPT = (t.match(/^(?:eu (?:escolho|jogo|vou de) |vou de |escolho |jogo )?(pedra|papel|tesoura)$/) || [])[1];
+    if (tem(/\b(pedra papel( e)? tesoura|jokenpo|jo ken po|ppt)\b/) && !escolhaPPT){
+      jogo = { tipo:'ppt' }; exprResposta = 'feliz';
+      return 'Bora jogar pedra, papel e tesoura! ✊✋✌️ Fala sua escolha: pedra, papel ou tesoura. (Diga "parar" pra sair.)';
+    }
+    if (escolhaPPT && (!jogo || jogo.tipo === 'ppt')){
+      jogo = { tipo:'ppt' };
+      var opcoes = ['pedra', 'papel', 'tesoura'];
+      var minha = opcoes[Math.floor(Math.random() * 3)];
+      var emoji = { pedra:'✊', papel:'✋', tesoura:'✌️' };
+      var ganha = { pedra:'tesoura', papel:'pedra', tesoura:'papel' };
+      var frase = 'Eu escolhi ' + minha + ' ' + emoji[minha] + '. ';
+      if (minha === escolhaPPT){ exprResposta = 'surpreso'; frase += 'Empate! 🤝'; }
+      else if (ganha[escolhaPPT] === minha){ placarPPT.voce++; exprResposta = 'triste'; frase += escolher(['Você ganhou! 🏆', 'Ah não, você venceu! +1000 de aura pra você.', 'W pra você. 😤']); }
+      else { placarPPT.karen++; exprResposta = 'rindo'; frase += escolher(['Eu ganhei! 😎', 'Ganhei! L pra você. 😂', 'Vitória da Karen! 🗿']); }
+      return frase + ' Placar: você ' + placarPPT.voce + ' x ' + placarPPT.karen + ' Karen. Mais uma? É só falar pedra, papel ou tesoura.';
+    }
+
+    // ---- adivinhar o número ----
+    if (tem(/\b(adivinha(r)? (o )?numero|adivinhe (o )?numero|jogo do numero|adivinhacao)\b/)){
+      jogo = { tipo:'numero', numero: 1 + Math.floor(Math.random() * 100), tentativas: 0 }; exprResposta = 'pensando';
+      return 'Pensei em um número de 1 a 100. 🤫 Tenta adivinhar! (Diga "parar" pra desistir.)';
+    }
+    if (jogo && jogo.tipo === 'numero'){
+      var tn = palavrasParaNumeros(t);
+      var mm = tn.match(/^(?:e |acho que e |sera que e |o |numero )?(\d+)$/);
+      if (mm){
+        var palpite = parseInt(mm[1], 10); jogo.tentativas++;
+        if (palpite === jogo.numero){
+          var n = jogo.tentativas; jogo = null; exprResposta = 'rindo';
+          return 'ACERTOU! 🎉 Era ' + palpite + '! Você conseguiu em ' + n + (n === 1 ? ' tentativa. Sem chance, isso foi aura pura! 🗿' : ' tentativas.') + ' Quer jogar de novo?';
+        }
+        exprResposta = 'pensando';
+        var dica = palpite < jogo.numero ? 'É maior que ' + palpite + '. ⬆️' : 'É menor que ' + palpite + '. ⬇️';
+        if (Math.abs(palpite - jogo.numero) <= 3) dica += ' Tá muito perto! 🔥';
+        return dica;
+      }
+    }
+
+    // ---- par ou ímpar ----
+    if (tem(/^(vamos jogar |bora |jogar )?(o )?par ou impar$/)){
+      jogo = { tipo:'parimpar' }; exprResposta = 'feliz';
+      return 'Par ou ímpar! Fala sua escolha e um número de 0 a 10, tipo "par 3" ou "ímpar 7".';
+    }
+    var pi = t.match(/^(?:eu (?:quero |escolho )?)?(par|impar)\s*(?:e |com |no )?(\d+|[a-z]+)?$/);
+    if (pi){
+      var numTxt = pi[2] ? palavrasParaNumeros(pi[2]) : null;
+      var meu = parseInt(numTxt, 10);
+      if (isNaN(meu)){ jogo = { tipo:'parimpar', escolha: pi[1] }; return 'Beleza, você é ' + (pi[1] === 'par' ? 'par' : 'ímpar') + '. Agora fala um número de 0 a 10.'; }
+      return resolverParImpar(pi[1], meu);
+    }
+    if (jogo && jogo.tipo === 'parimpar' && jogo.escolha){
+      var so = palavrasParaNumeros(t).match(/^(\d+)$/);
+      if (so) return resolverParImpar(jogo.escolha, parseInt(so[1], 10));
+    }
+
+    // ---- cara ou coroa ----
+    if (tem(/\b(cara ou coroa|joga (uma )?moeda|jogar (uma )?moeda|lanca (uma )?moeda|gira (uma )?moeda)\b/)){
+      exprResposta = 'surpreso';
+      return 'Jogando a moeda... 🪙 Deu ' + escolher(['CARA', 'COROA']) + '!';
+    }
+
+    // ---- dado ----
+    var md = t.match(/\b(?:rola|rolar|joga|jogar|lanca|lancar|gira)\s+(?:um |o )?dado(?: de (\d+)(?: lados)?)?\b/) || t.match(/^dado(?: de (\d+))?$/);
+    if (md){
+      var lados = Math.min(Math.max(parseInt(md[1] || '6', 10) || 6, 2), 1000);
+      var res = 1 + Math.floor(Math.random() * lados);
+      exprResposta = res === lados ? 'rindo' : 'surpreso';
+      return 'Rolando o dado de ' + lados + ' lados... 🎲 Deu ' + res + '!' + (res === lados ? ' Valor máximo! 🔥' : '') + (res === 67 ? ' SIX SEVEN! 🤲' : '');
+    }
+    return null;
+  }
+  function resolverParImpar(escolha, meu){
+    jogo = null;
+    if (meu < 0 || meu > 10) { jogo = { tipo:'parimpar', escolha: escolha }; return 'Tem que ser um número de 0 a 10. Fala de novo!'; }
+    var dela = Math.floor(Math.random() * 11);
+    var soma = meu + dela;
+    var deu = soma % 2 === 0 ? 'par' : 'impar';
+    var ganhou = deu === escolha;
+    exprResposta = ganhou ? 'triste' : 'rindo';
+    return 'Eu joguei ' + dela + '. ' + meu + ' + ' + dela + ' = ' + soma + ', deu ' + (deu === 'par' ? 'par' : 'ímpar') + '! ' + (ganhou ? 'Você ganhou! 🏆' : 'Eu ganhei! 😎') + ' Quer jogar de novo? Fala "par ou ímpar".';
+  }
+
   // ---------- contas de matemática ----------
   var NUM_UNID = { zero:0, um:1, uma:1, dois:2, duas:2, tres:3, quatro:4, cinco:5, seis:6, sete:7, oito:8, nove:9, dez:10, onze:11, doze:12, treze:13, catorze:14, quatorze:14, quinze:15, dezesseis:16, dezessete:17, dezoito:18, dezenove:19 };
   var NUM_DEZ = { vinte:20, trinta:30, quarenta:40, cinquenta:50, sessenta:60, setenta:70, oitenta:80, noventa:90 };
@@ -1233,6 +1338,7 @@ body.modo-terra .expr-label{display:none}
   function responderA(fala){
     var t = fala.toLowerCase();
 
+    var rJogo = responderJogos(fala); if (rJogo) return rJogo;
     var rConta = responderConta(fala); if (rConta) return rConta;
     // easter egg
     if (/\b(voce e gay|voce e lesbica|voce gay|e gay voce)\b/.test(semAcento(fala))){
