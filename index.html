@@ -1085,7 +1085,8 @@ body.modo-terra .expr-label{display:none}
     if (tem(/\b(cringe|que cringe|muito cringe)\b/)){ exprResposta = 'confuso'; return escolher(['Cringe nível máximo. 😬', 'Isso foi tão cringe que meus circuitos travaram.']); }
     if (tem(/\b(tankar|tanko|nao tanko|tankei|nao da pra tankar)\b/)){ exprResposta = 'rindo'; return escolher(['Eu tanko tudo. Menos divisão por zero.', 'Não tem como tankar, né? Entendo.']); }
     if (tem(/\b(delulu)\b/)){ exprResposta = 'rindo'; return 'Delulu é a solução, já dizia o ditado. 🌈'; }
-    if (tem(/\b(papo reto|pprt)\b/)){ exprResposta = 'feliz'; return 'Papo reto, sem enrolação. Pode falar.'; }
+    if (tem(/\b(e papo reto|papo reto mesmo|isso e papo reto|serio mesmo|papo reto\?)\b/) || /papo reto\s*\?/.test(semAcento(fala))){ exprResposta = 'feliz'; return escolher(['Papo retíssimo! 🤝', 'Papo reto, juro por todos os meus circuitos.', 'Pprt, sem mentira nenhuma.']); }
+    if (tem(/\b(papo reto|pprt|papo reto mano|papo reto vei)\b/)){ exprResposta = 'feliz'; return escolher(['Papo reto, sem enrolação. Pode falar.', 'Pprt! Manda a visão. 🤝', 'Papo reto? Tô ouvindo, pode mandar.', 'Aqui é só papo reto, sem curva. 🗿']); }
     if (tem(/\b(pode pa|pdp)\b/)){ exprResposta = 'feliz'; return 'Pode pá! 🤝'; }
     if (tem(/\b(juro|jura)\b/) && t.split(' ').length <= 2){ exprResposta = 'surpreso'; return 'Juro! Por todos os meus circuitos.'; }
     if (tem(/\b(plot twist|plot)\b/)){ exprResposta = 'surpreso'; return 'Plot twist: a Karen sempre esteve certa. 😱'; }
