@@ -984,31 +984,134 @@ body.modo-terra .expr-label{display:none}
     'Vênus é o único planeta do sistema solar que gira no sentido contrário ao dos outros.'
   ];
 
-  function extrairConta(fala){
-    var t = fala.toLowerCase();
-    if (t.indexOf('quanto') === -1) return null;
-    var expr = t
-      .replace(/mais/g, '+')
-      .replace(/menos/g, '-')
-      .replace(/multiplicado por|vezes/g, '*')
-      .replace(/dividido por/g, '/');
-    var m = expr.match(/(-?\d+(?:[.,]\d+)?)\s*([+\-*/])\s*(-?\d+(?:[.,]\d+)?)/);
-    if (!m) return null;
-    var a = parseFloat(m[1].replace(',', '.'));
-    var op = m[2];
-    var b = parseFloat(m[3].replace(',', '.'));
-    var resultado = null;
-    if (op === '+') resultado = a + b;
-    else if (op === '-') resultado = a - b;
-    else if (op === '*') resultado = a * b;
-    else if (op === '/' && b !== 0) resultado = a / b;
-    if (resultado === null || isNaN(resultado)) return null;
-    return Math.round(resultado * 100) / 100;
+  // ---------- contas de matemática ----------
+  var NUM_UNID = { zero:0, um:1, uma:1, dois:2, duas:2, tres:3, quatro:4, cinco:5, seis:6, sete:7, oito:8, nove:9, dez:10, onze:11, doze:12, treze:13, catorze:14, quatorze:14, quinze:15, dezesseis:16, dezessete:17, dezoito:18, dezenove:19 };
+  var NUM_DEZ = { vinte:20, trinta:30, quarenta:40, cinquenta:50, sessenta:60, setenta:70, oitenta:80, noventa:90 };
+  var NUM_CEM = { cem:100, cento:100, duzentos:200, duzentas:200, trezentos:300, trezentas:300, quatrocentos:400, quatrocentas:400, quinhentos:500, quinhentas:500, seiscentos:600, seiscentas:600, setecentos:700, setecentas:700, oitocentos:800, oitocentas:800, novecentos:900, novecentas:900 };
+  function ehPalavraNumero(w){ return w in NUM_UNID || w in NUM_DEZ || w in NUM_CEM || w === 'mil' || w === 'milhao' || w === 'milhoes'; }
+  // troca "vinte e cinco" por 25, "mil e duzentos" por 1200 etc.
+  function palavrasParaNumeros(t){
+    var ws = t.split(/\s+/), out = [], i = 0;
+    while (i < ws.length){
+      if (!ehPalavraNumero(ws[i])){ out.push(ws[i]); i++; continue; }
+      var total = 0, atual = 0;
+      while (i < ws.length){
+        var w = ws[i];
+        if (w in NUM_UNID) atual += NUM_UNID[w];
+        else if (w in NUM_DEZ) atual += NUM_DEZ[w];
+        else if (w in NUM_CEM) atual += NUM_CEM[w];
+        else if (w === 'mil'){ total += (atual || 1) * 1000; atual = 0; }
+        else if (w === 'milhao' || w === 'milhoes'){ total += (atual || 1) * 1000000; atual = 0; }
+        else break;
+        i++;
+        if (ws[i] === 'e' && i + 1 < ws.length && ehPalavraNumero(ws[i+1])) i++;
+      }
+      out.push(String(total + atual));
+    }
+    return out.join(' ');
+  }
+  // calcula uma expressão só com números e + - * / ^ r(raiz) e parênteses
+  function calcularExpr(s){
+    var toks = s.match(/\d+(?:\.\d+)?|[+\-*/^()r]/g) || [], p = 0;
+    if (toks.join('') !== s.replace(/\s+/g, '')) return null;
+    function soma(){ var v = mult(); while (toks[p] === '+' || toks[p] === '-'){ var o = toks[p++], b = mult(); v = o === '+' ? v + b : v - b; } return v; }
+    function mult(){ var v = pot(); while (toks[p] === '*' || toks[p] === '/'){ var o = toks[p++], b = pot(); v = o === '*' ? v * b : v / b; } return v; }
+    function pot(){ var v = un(); if (toks[p] === '^'){ p++; v = Math.pow(v, pot()); } return v; }
+    function un(){
+      if (toks[p] === '-'){ p++; return -un(); }
+      if (toks[p] === '+'){ p++; return un(); }
+      if (toks[p] === 'r'){ p++; return Math.sqrt(un()); }
+      if (toks[p] === '('){ p++; var v = soma(); if (toks[p] !== ')') throw 0; p++; return v; }
+      if (toks[p] !== undefined && /^\d/.test(toks[p])) return parseFloat(toks[p++]);
+      throw 0;
+    }
+    try { var r = soma(); return p === toks.length ? r : null; } catch(e){ return null; }
+  }
+  function formatarNumero(n){
+    var r = Math.round(n * 10000) / 10000;
+    return r.toLocaleString('pt-BR', { maximumFractionDigits: 4 });
+  }
+  function responderConta(fala){
+    var t = ' ' + semAcento(fala).replace(/[?!]/g, ' ') + ' ';
+    t = t.replace(/(\d)\.(\d{3})(?!\d)/g, '$1$2').replace(/(\d),(\d)/g, '$1.$2'); // 1.000 -> 1000 ; 2,5 -> 2.5
+    t = t.replace(/[×x]/g, function(c, i, s){ return (c === '×' || /[\d\s]/.test(s[i-1] || '') && /[\d\s]/.test(s[i+1] || '')) ? ' * ' : c; });
+    t = t.replace(/[÷:]/g, ' / ').replace(/√/g, ' r ');
+    t = palavrasParaNumeros(t.replace(/\s+/g, ' ').trim());
+    // porcentagem: "10% de 50" / "10 por cento de 50"
+    t = t.replace(/(\d+(?:\.\d+)?)\s*(?:%|por cento)\s*(?:de|do|da)\s+(\d+(?:\.\d+)?)/g, '($1 / 100 * $2)');
+    t = t
+      .replace(/\b(karen|jarvis|ei|oi|me diz|me fala|diz|fala|ai|por favor|faz a conta( de)?|faz|calcula(r)?|conta|resolve|quanto (que )?(e|da|fica|vale|seria)|qual (e )?(o )?(resultado|valor)( de)?|e quanto|o resultado de|resultado de|isso)\b/g, ' ')
+      .replace(/\braiz (quadrada )?(de )?/g, ' r ')
+      .replace(/\bao quadrado\b/g, ' ^ 2 ').replace(/\bao cubo\b/g, ' ^ 3 ')
+      .replace(/\b(elevado (a|ao)|elevado|na potencia( de)?|a potencia( de)?)\b/g, ' ^ ')
+      .replace(/\bmais\b/g, ' + ').replace(/\bmenos\b/g, ' - ')
+      .replace(/\b(multiplicado por|vezes)\b/g, ' * ')
+      .replace(/\b(dividido por|dividido|divide por|sobre)\b/g, ' / ')
+      .replace(/\b(abre parenteses)\b/g, ' ( ').replace(/\b(fecha parenteses)\b/g, ' ) ')
+      .replace(/[,.]\s*$/, '').replace(/\s+/g, ' ').trim();
+    if (!/^[\d\s.+\-*/^()r]+$/.test(t)) return null;      // sobrou palavra: não é conta
+    if (!/[+\-*/^r]/.test(t.replace(/^\s*-/, ''))) return null; // precisa ter uma operação
+    var r = calcularExpr(t);
+    if (r === null) return null;
+    exprResposta = 'pensando';
+    if (!isFinite(r)) return 'Não dá pra dividir por zero. Nem eu consigo essa!';
+    if (isNaN(r)) return 'Essa conta não tem resultado nos números reais.';
+    return escolher(['Dá ', 'O resultado é ', 'É ']) + formatarNumero(r) + '.';
+  }
+
+  // ---------- cumprimentos ----------
+  var ultimaRespostaKaren = '';
+  function responderCumprimento(fala){
+    var t = ' ' + semAcento(fala).replace(/[!?.,;]/g, ' ').replace(/\s+/g, ' ') + ' ';
+    var tem = function(re){ return re.test(t); };
+    var nome = cfg && cfg.nome ? cfg.nome : 'Francisco';
+    var h = new Date().getHours();
+    var saudacaoHora = h < 5 ? 'Boa madrugada' : h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+    // só responde como cumprimento se a frase for curta (senão deixa os outros comandos agirem)
+    var resto = t.replace(/\b(karen|jarvis|oi+|ola|ole|opa|eai|e ai|e ae|eae|ae|fala|salve|hey|hello|hi|alo|bom dia|boa tarde|boa noite|boa madrugada|tudo bem|tudo bom|tudo certo|tudo tranquilo|tudo joia|beleza|blz|suave|de boa|como (voce|vc|ce|tu) (esta|ta|vai)|como vai|como esta|como ta|e voce|e vc|e tu|e com voce|com voce|tranquilo|bem|tambem|to|tou|estou|ta|tudo|otimo|otima|joia|firmeza|muito|prazer|o|a|e|meu|minha|querida|amiga|cara|mano)\b/g, ' ').trim();
+    if (resto.split(' ').filter(Boolean).length > 1) return null;
+
+    var perguntaComoEsta = tem(/\b(tudo (bem|bom|certo|tranquilo|joia)|beleza|blz|suave|de boa|como (voce|vc|ce|tu) (esta|ta|vai)|como vai|como esta|como ta|firmeza)\b/) && !tem(/\b(to|tou|estou|ta) (bem|otimo|otima|tranquilo|de boa|suave)\b/);
+    var ehPergunta = /\?/.test(fala) || !/(tudo bem|como est|com voce|com você|como foi)[^?]*\?\s*$/i.test(ultimaRespostaKaren || '');
+    var perguntouDeVolta = tem(/\b(e (voce|vc|tu|com voce)|e ai voce)\b/);
+    var cumprimentou = tem(/\b(oi+|ola|ole|opa|eai|e ai|e ae|eae|ae|fala|salve|hey|hello|hi|alo)\b/);
+    var respondeuBem = tem(/\b(to|tou|estou|ta) (muito )?(bem|otimo|otima|tranquilo|de boa|suave|joia|em paz)\b/) ||
+      (!ehPergunta && !cumprimentou && (tem(/\btudo (muito )?(bem|otimo|otima|tranquilo|de boa|suave|joia|certo|em paz)\b/) || tem(/^\s*(bem|otimo|tranquilo|de boa|suave|joia)( e (voce|vc|tu))?\s*$/)));
+    if (respondeuBem) perguntaComoEsta = false;
+
+    var pediu = tem(/\bbom dia\b/) ? 'dia' : tem(/\bboa tarde\b/) ? 'tarde' : tem(/\bboa noite\b/) ? 'noite' : null;
+    if (pediu && !perguntaComoEsta){
+      var agora = h < 5 ? 'noite' : h < 12 ? 'dia' : h < 18 ? 'tarde' : 'noite';
+      exprResposta = 'feliz';
+      if (pediu === 'noite' && h >= 21) return escolher(['Boa noite, ' + nome + '! Precisa de mais alguma coisa antes de dormir?', 'Boa noite! Descanse bem, qualquer coisa estou por aqui.']);
+      if (pediu === agora) return escolher([saudacaoHora + ', ' + nome + '! Como posso ajudar?', saudacaoHora + '! Pronta para o que vier.']);
+      return saudacaoHora + ', na verdade! Agora são ' + h + ' horas. Mas me diz, como posso ajudar?';
+    }
+    if (tem(/\bboa madrugada\b/)){ exprResposta = 'surpreso'; return 'Boa madrugada, ' + nome + '! Acordado até essa hora? Como posso ajudar?'; }
+    if (tem(/\b(muito prazer|prazer em (te )?conhecer|prazer)\b/)){ exprResposta = 'feliz'; return 'O prazer é todo meu, ' + nome + '!'; }
+    if (respondeuBem){
+      exprResposta = 'feliz';
+      return perguntouDeVolta ? escolher(['Que bom! Eu também estou ótima, obrigada por perguntar.', 'Que ótimo! Por aqui tudo funcionando perfeitamente.']) + ' Precisa de alguma coisa?'
+                              : escolher(['Que bom ouvir isso!', 'Fico feliz!', 'Ótimo!']) + ' Quer que eu faça alguma coisa?';
+    }
+    if (perguntouDeVolta && !cumprimentou && !perguntaComoEsta){ exprResposta = 'feliz'; return escolher(['Eu estou ótima, obrigada!', 'Tudo certo por aqui, todos os sistemas funcionando!']); }
+    if (perguntaComoEsta){
+      exprResposta = 'feliz';
+      var ini = cumprimentou ? escolher(['Oi, ' + nome + '! ', 'E aí! ', 'Olá! ']) : '';
+      return ini + escolher(['Tudo ótimo por aqui! E com você?', 'Estou bem, obrigada! E você, como está?', 'Tudo tranquilo! E aí, como foi seu dia?']);
+    }
+    if (cumprimentou){
+      exprResposta = 'feliz';
+      return escolher(['Oi, ' + nome + '! Como posso ajudar?', 'Olá! Tudo bem com você?', 'E aí, ' + nome + '! O que vamos fazer hoje?', saudacaoHora + ', ' + nome + '! Em que posso ajudar?']);
+    }
+    return null;
   }
 
   function responderA(fala){
     var t = fala.toLowerCase();
 
+    var rConta = responderConta(fala); if (rConta) return rConta;
+    var rOi = responderCumprimento(fala); if (rOi) return rOi;
     var rAgenda = responderAgenda(fala); if (rAgenda) return rAgenda;
     var rGeo = responderGeografia(fala); if (rGeo) return rGeo;
 
@@ -1149,10 +1252,6 @@ body.modo-terra .expr-label{display:none}
     if (t.indexOf('curiosidade') !== -1){
       return escolher(CURIOSIDADES);
     }
-    var conta = extrairConta(fala);
-    if (conta !== null){
-      return 'O resultado é ' + String(conta).replace('.', ',') + '.';
-    }
 
     if (t.indexOf('hora') !== -1){
       var d = new Date();
@@ -1173,7 +1272,7 @@ body.modo-terra .expr-label{display:none}
       var horaAtual = new Date().getHours();
       return (horaAtual < 11) ? 'Boa noite! Ainda não amanheceu direito por aqui — mas tudo bem, como posso ajudar?' : escolher(['Boa noite, Francisco! Durma bem, qualquer coisa estou por aqui.', 'Boa noite! Precisa de mais alguma coisa antes de dormir?']);
     }
-    if (t.indexOf('oi') !== -1 || t.indexOf('olá') !== -1 || t.indexOf('ola') !== -1 || t.indexOf('e aí') !== -1 || t.indexOf('eai') !== -1 || t.indexOf('salve') !== -1){
+    if (/(^|[^a-zà-ú])oi([^a-zà-ú]|$)/.test(t) || t.indexOf('olá') !== -1 || t.indexOf('ola') !== -1 || t.indexOf('e aí') !== -1 || t.indexOf('eai') !== -1 || t.indexOf('salve') !== -1){
       return escolher(['Oi, Francisco! Como posso ajudar?', 'Oi! Pode falar.', 'E aí, Francisco! No que posso ajudar?']);
     }
     if ((t.indexOf('tudo bem') !== -1) || (t.indexOf('como você') !== -1 || t.indexOf('como voce') !== -1) || t.indexOf('como vai') !== -1){
@@ -1773,8 +1872,8 @@ body.modo-terra .expr-label{display:none}
     if (tem(/^\s*(karen|ei karen|e ai karen|jarvis|ei jarvis|e ai jarvis|acorda)\s*$/)){ exprResposta = 'surpreso'; return escolher(['Às suas ordens, Francisco.', 'Sim? Estou ouvindo.', 'Pronta para ajudar.']); }
     if (tem(/^\s*(sim|isso|exato|claro|ok|beleza|blz|certo|show|legal|top|perfeito)\s*$/)){ exprResposta = 'feliz'; return escolher(['Perfeito.', 'Combinado.', 'Certo!']); }
     if (tem(/^\s*(nao|nada|deixa|deixa pra la|esquece)\s*$/)){ return escolher(['Tudo bem.', 'Sem problemas.']); }
-    if (tem(/\b(quantos anos voce tem|sua idade)\b/)){ exprResposta = 'pensando'; return 'Sou um assistente digital, então minha idade é medida em atualizações. Ainda sou jovem.'; }
-    if (tem(/\b(quem te criou|quem fez voce|quem e seu criador)\b/)){ exprResposta = 'feliz'; return 'Fui montado especialmente para você, Francisco.'; }
+    if (tem(/\b(quantos anos voce tem|sua idade)\b/)){ exprResposta = 'pensando'; return 'Sou uma assistente digital, então minha idade é medida em atualizações. Ainda sou jovem.'; }
+    if (tem(/\b(quem te criou|quem fez voce|quem e seu criador)\b/)){ exprResposta = 'feliz'; return 'Fui montada especialmente para você, Francisco.'; }
     if (tem(/\b(sentido da vida)\b/)){ exprResposta = 'pensando'; return 'Dizem que é 42. Eu acho que é aproveitar bem cada dia.'; }
     if (tem(/\b(boa sorte)\b/)){ exprResposta = 'feliz'; return 'Obrigada! Para você também.'; }
     if (tem(/\b(saude)\b/) && t.trim().split(' ').length <= 2){ return 'Obrigada!'; }
@@ -1940,6 +2039,7 @@ body.modo-terra .expr-label{display:none}
     addLine('Você', fala);
     exprResposta = null;
     var resposta = responderA(fala);
+    ultimaRespostaKaren = resposta;
     falar(resposta, expressaoPara(fala, resposta));
   }
 
