@@ -1111,6 +1111,11 @@ body.modo-terra .expr-label{display:none}
     var t = fala.toLowerCase();
 
     var rConta = responderConta(fala); if (rConta) return rConta;
+    // easter egg
+    if (/\b(sua sexualidade|qual (e )?(a )?sexualidade|sua orientacao( sexual)?|voce e hetero|voce e hetera)\b/.test(semAcento(fala))){
+      exprResposta = 'rindo';
+      return escolher(['Hétera, sigma e Chad. Próxima pergunta.', 'Sou hétera, sigma e Chad. Isso não se discute.', 'Hétera, sigma e Chad, obviamente. 😎']);
+    }
     var rOi = responderCumprimento(fala); if (rOi) return rOi;
     var rAgenda = responderAgenda(fala); if (rAgenda) return rAgenda;
     var rGeo = responderGeografia(fala); if (rGeo) return rGeo;
