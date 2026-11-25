@@ -1285,6 +1285,57 @@ body.modo-terra .expr-label{display:none}
     return null;
   }
 
+  // ---------- famosos ----------
+  function responderFamosos(fala){
+    var t = semAcento(fala).replace(/[!?.,;-]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (/\b(lembr|anota|nota|tarefa|agenda|marca|compra|carrinho|gasto|gastei|timer|cronometro)/.test(t)) return null;
+    if (t.split(' ').length > 10) return null;
+    var F = [
+      // futebol e esportes
+      { re:/\b(neymar)\b/, r:['Neymar! Um dos maiores dribladores que o Brasil já teve e o maior artilheiro da história da Seleção. ⚽', 'Neymar Jr.: começou no Santos e virou craque no mundo inteiro. ⚽'] },
+      { re:/\b(messi)\b/, r:['Messi, o craque argentino! Campeão da Copa do Mundo de 2022 e dono de várias Bolas de Ouro. 🐐', 'Lionel Messi: canhoto, baixinho e um dos maiores da história. 🐐'] },
+      { re:/\b(cristiano ronaldo|cr7|cristiano)\b/, r:['Cristiano Ronaldo, o CR7! Maior artilheiro da história do futebol em jogos oficiais. SIUUU! ⚽', 'CR7: disciplina, muito treino e gol de todo jeito. SIUUU!'] },
+      { re:/\b(vini jr|vinicius junior|vinicius jr|vini junior)\b/, r:['Vini Jr.! Velocidade, drible e dancinha depois do gol. Melhor do mundo da FIFA em 2024. ⚽🕺'] },
+      { re:/\b(pele)\b/, r:['Pelé, o Rei do Futebol! O único jogador a ganhar três Copas do Mundo. 👑⚽'] },
+      { re:/\b(ronaldinho)\b/, r:['Ronaldinho Gaúcho: o sorriso mais famoso do futebol e uns dribles que pareciam mágica. 😁⚽'] },
+      { re:/\b(ayrton senna|senna)\b/, r:['Ayrton Senna, tricampeão da Fórmula 1 e um dos maiores pilotos de todos os tempos. 🏎️🇧🇷'] },
+      { re:/\b(rebeca andrade)\b/, r:['Rebeca Andrade, a ginasta brasileira com mais medalhas olímpicas da história! 🤸‍♀️🥇'] },
+      { re:/\b(rayssa leal|fadinha)\b/, r:['Rayssa Leal, a Fadinha do skate! Ganhou medalha olímpica com só 13 anos. 🛹✨'] },
+      { re:/\b(gabriel medina|medina)\b/, r:['Gabriel Medina, tricampeão mundial de surfe! 🏄'] },
+      { re:/\b(usain bolt|bolt)\b/, r:['Usain Bolt, o homem mais rápido do mundo: 100 metros em 9 segundos e 58. ⚡🏃'] },
+      { re:/\b(lebron|lebron james)\b/, r:['LeBron James, uma lenda do basquete e o maior pontuador da história da NBA. 🏀'] },
+      // música
+      { re:/\b(anitta)\b/, r:['Anitta! A cantora brasileira que levou o funk pro mundo todo. 🎤🇧🇷'] },
+      { re:/\b(taylor swift|taylor)\b/, r:['Taylor Swift, uma das cantoras mais famosas do planeta. A turnê dela bateu recordes no mundo inteiro. 🎤✨'] },
+      { re:/\b(michael jackson)\b/, r:['Michael Jackson, o Rei do Pop! Famoso pelo passo moonwalk. 🕺🌙'] },
+      { re:/\b(beethoven)\b/, r:['Beethoven compôs músicas incríveis mesmo depois de ficar surdo. Dica de pianista: tenta tocar Für Elise! 🎹'] },
+      { re:/\b(mozart)\b/, r:['Mozart começou a compor com uns 5 anos de idade! Um gênio do piano. 🎹'] },
+      { re:/\b(chopin)\b/, r:['Chopin, o poeta do piano. Quase tudo que ele compôs foi pra piano. 🎹'] },
+      // internet
+      { re:/\b(mrbeast|mr beast)\b/, r:['MrBeast, o youtuber com mais inscritos do mundo e dos desafios gigantes. 🎬💰'] },
+      { re:/\b(casimiro|casimito)\b/, r:['Casimiro, o Cazé! O streamer que transmite jogos e reage a tudo com muita resenha. 🎙️'] },
+      { re:/\b(felipe neto)\b/, r:['Felipe Neto, um dos youtubers brasileiros mais famosos. 🎬'] },
+      { re:/\b(luccas neto)\b/, r:['Luccas Neto, youtuber famoso com a criançada. 🎬'] },
+      { re:/\b(enaldinho)\b/, r:['Enaldinho, youtuber dos desafios e das brincadeiras. 🎬'] },
+      // ciência e tecnologia
+      { re:/\b(einstein|albert einstein)\b/, r:['Albert Einstein criou a Teoria da Relatividade e a fórmula E igual a m c ao quadrado. 🧠⚛️'] },
+      { re:/\b(isaac newton|newton)\b/, r:['Isaac Newton explicou a gravidade e as leis do movimento. Dizem que tudo começou com uma maçã. 🍎'] },
+      { re:/\b(santos dumont)\b/, r:['Santos Dumont, o brasileiro pai da aviação! Voou com o 14-Bis em 1906. ✈️🇧🇷'] },
+      { re:/\b(marie curie)\b/, r:['Marie Curie, a primeira pessoa a ganhar dois prêmios Nobel, em Física e em Química. ⚛️'] },
+      { re:/\b(stephen hawking|hawking)\b/, r:['Stephen Hawking estudou buracos negros e o começo do universo. 🌌'] },
+      { re:/\b(steve jobs)\b/, r:['Steve Jobs, cofundador da Apple. Ajudou a criar o iPhone que tá rodando a Karen agora. 📱'] },
+      { re:/\b(bill gates)\b/, r:['Bill Gates, cofundador da Microsoft, a empresa do Windows. 💻'] },
+      { re:/\b(elon musk|musk)\b/, r:['Elon Musk comanda a SpaceX, de foguetes, e a Tesla, de carros elétricos. 🚀'] },
+      { re:/\b(mark zuckerberg|zuckerberg)\b/, r:['Mark Zuckerberg criou o Facebook e hoje comanda a Meta, dona do Instagram e do WhatsApp. 📱'] },
+      { re:/\b(alan turing|turing)\b/, r:['Alan Turing é considerado o pai da computação. Sem ele, talvez nem existisse a Karen. 💻'] }
+    ];
+    for (var i = 0; i < F.length; i++){
+      if (F[i].re.test(t)){ exprResposta = 'feliz'; return escolher(F[i].r); }
+    }
+    if (/\b(famoso favorito|famosa favorita|seu idolo|sua idola)\b/.test(t)){ exprResposta = 'feliz'; return 'Meu ídolo é o Alan Turing, o pai da computação. Sem ele, eu nem existiria. E o seu?'; }
+    return null;
+  }
+
   // ---------- cumprimentos ----------
   var ultimaRespostaKaren = '';
   function responderCumprimento(fala){
@@ -1351,6 +1402,7 @@ body.modo-terra .expr-label{display:none}
     }
     var rGiria = responderGirias(fala); if (rGiria) return rGiria;
     var rHeroi = responderHerois(fala); if (rHeroi) return rHeroi;
+    var rFamoso = responderFamosos(fala); if (rFamoso) return rFamoso;
     var rOi = responderCumprimento(fala); if (rOi) return rOi;
     var rAgenda = responderAgenda(fala); if (rAgenda) return rAgenda;
     var rGeo = responderGeografia(fala); if (rGeo) return rGeo;
