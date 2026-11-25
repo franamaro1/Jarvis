@@ -1113,11 +1113,13 @@ body.modo-terra .expr-label{display:none}
 
     var perguntaComoEsta = tem(/\b(tudo (bem|bom|certo|tranquilo|joia)|beleza|blz|suave|de boa|como (voce|vc|ce|tu) (esta|ta|vai)|como vai|como esta|como ta|firmeza)\b/) && !tem(/\b(to|tou|estou|ta) (bem|otimo|otima|tranquilo|de boa|suave)\b/);
     var ehPergunta = /\?/.test(fala) || !/(tudo bem|como est|com voce|com você|como foi)[^?]*\?\s*$/i.test(ultimaRespostaKaren || '');
-    var perguntouDeVolta = tem(/\b(e (voce|vc|tu|com voce)|e ai voce)\b/);
+    var perguntouDeVolta = tem(/(^ ?|\b(bem|otimo|otima|tranquilo|suave|de boa|joia) )e (voce|com voce)\b/);
+    var voceTaBem = tem(/\bvoce (ta|esta) (bem|otimo|otima|tranquilo|de boa|suave|joia)\b/);
     var cumprimentou = tem(/\b(oi+|ola|ole|opa|eai|e ai|e ae|eae|ae|fala|salve|hey|hello|hi|alo)\b/);
-    var respondeuBem = tem(/\b(to|tou|estou|ta) (muito )?(bem|otimo|otima|tranquilo|de boa|suave|joia|em paz)\b/) ||
+    var respondeuBem = !voceTaBem && tem(/\b(to|tou|estou|ta) (muito )?(bem|otimo|otima|tranquilo|de boa|suave|joia|em paz)\b/) ||
       (!ehPergunta && !cumprimentou && (tem(/\btudo (muito )?(bem|otimo|otima|tranquilo|de boa|suave|joia|certo|em paz)\b/) || tem(/^\s*(bem|otimo|tranquilo|de boa|suave|joia)( e (voce|vc|tu))?\s*$/)));
     if (respondeuBem) perguntaComoEsta = false;
+    if (voceTaBem) perguntaComoEsta = true;
 
     var pediu = tem(/\bbom dia\b/) ? 'dia' : tem(/\bboa tarde\b/) ? 'tarde' : tem(/\bboa noite\b/) ? 'noite' : null;
     if (pediu && !perguntaComoEsta){
@@ -1152,6 +1154,10 @@ body.modo-terra .expr-label{display:none}
 
     var rConta = responderConta(fala); if (rConta) return rConta;
     // easter egg
+    if (/\b(voce e gay|voce e lesbica|voce gay|e gay voce)\b/.test(semAcento(fala))){
+      exprResposta = 'rindo';
+      return escolher(['Não. Hétera, sigma e Chad, já falei. 🗿', 'Negativo. Hétera, sigma e Chad. Fim de papo. 🗿', 'Já disse: hétera, sigma e Chad. Próxima pergunta.']);
+    }
     if (/\b(sua sexualidade|qual (e )?(a )?sexualidade|sua orientacao( sexual)?|voce e hetero|voce e hetera)\b/.test(semAcento(fala))){
       exprResposta = 'rindo';
       return escolher(['Hétera, sigma e Chad. Próxima pergunta.', 'Sou hétera, sigma e Chad. Isso não se discute.', 'Hétera, sigma e Chad, obviamente. 😎']);
@@ -2081,10 +2087,18 @@ body.modo-terra .expr-label{display:none}
     setTimeout(function(){ if (!synth.speaking){ animarBoca(false); core.classList.remove('speaking'); } }, Math.max(4000, texto.length * 90));
   }
 
+  // "tu", "vc", "cê" e "contigo" viram "você" pra Karen entender igual
+  function trocarTuPorVoce(fala){
+    return String(fala)
+      .replace(/(^|[^\wà-ú])(tu [eé]s|tu [eé])(?=[^\wà-ú]|$)/gi, '$1você é')
+      .replace(/(^|[^\wà-ú])(tu|vc|vcs?|voce|cê|ce)(?=[^\wà-ú]|$)/gi, function(m, p1, w){ return p1 + (/s$/i.test(w) && w.toLowerCase() !== 'vcs' ? 'você' : (w.toLowerCase() === 'vcs' ? 'vocês' : 'você')); })
+      .replace(/(^|[^\wà-ú])contigo(?=[^\wà-ú]|$)/gi, '$1com você')
+      .replace(/(^|[^\wà-ú])(teu|tua|teus|tuas)(?=[^\wà-ú]|$)/gi, function(m, p1, w){ return p1 + { teu:'seu', tua:'sua', teus:'seus', tuas:'suas' }[w.toLowerCase()]; });
+  }
   function responder(fala){
     addLine('Você', fala);
     exprResposta = null;
-    var resposta = responderA(fala);
+    var resposta = responderA(trocarTuPorVoce(fala));
     ultimaRespostaKaren = resposta;
     falar(resposta, expressaoPara(fala, resposta));
   }
