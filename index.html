@@ -2,13 +2,13 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>Jarvis</title>
+<title>Karen</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#070b12">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Jarvis">
+<meta name="apple-mobile-web-app-title" content="Karen">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
@@ -289,12 +289,12 @@ body.modo-terra .expr-label{display:none}
 <body>
 
 <div class="topbar">
-  <div class="brand">JARVIS<small>ASSISTENTE PESSOAL</small></div>
+  <div class="brand">KAREN<small>ASSISTENTE PESSOAL</small></div>
   <div class="status"><span class="status-dot" id="statusDot"></span><span id="statusText">Em espera</span></div>
 </div>
 
 <div class="core-wrap">
-  <div class="core" id="core" role="button" aria-label="Rosto do Jarvis">
+  <div class="core" id="core" role="button" aria-label="Rosto da Karen">
     <svg viewBox="0 0 200 200" aria-hidden="true">
       <circle class="hud-ring r1" cx="100" cy="100" r="96"/>
       <circle class="hud-ring r2" cx="100" cy="100" r="86"/>
@@ -359,8 +359,8 @@ body.modo-terra .expr-label{display:none}
 </div>
 
 <div class="controls">
-  <div class="hint" id="hint">Toque no botão e fale com o Jarvis</div>
-  <button class="mic-btn" id="micBtn" aria-label="Falar com o Jarvis">
+  <div class="hint" id="hint">Toque no botão e fale com a Karen</div>
+  <button class="mic-btn" id="micBtn" aria-label="Falar com a Karen">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
       <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
@@ -458,7 +458,7 @@ body.modo-terra .expr-label{display:none}
     if (!list.length){
       var empty = document.createElement('div');
       empty.className = 'empty';
-      empty.textContent = 'Nenhum lembrete ainda. Fala "Jarvis, me lembra de ligar pra mãe amanhã às 10h".';
+      empty.textContent = 'Nenhum lembrete ainda. Fala "Karen, me lembra de ligar pra mãe amanhã às 10h".';
       remindersView.appendChild(empty);
       return;
     }
@@ -1164,7 +1164,7 @@ body.modo-terra .expr-label{display:none}
     }
     // ---------- cumprimentos e expressões básicas ----------
     if (t.indexOf('bom dia') !== -1){
-      return escolher(['Bom dia, Francisco! Como posso ajudar?', 'Bom dia! Pronto para o que vier.', 'Bom dia! Me diz o que você precisa.']);
+      return escolher(['Bom dia, Francisco! Como posso ajudar?', 'Bom dia! Pronta para o que vier.', 'Bom dia! Me diz o que você precisa.']);
     }
     if (t.indexOf('boa tarde') !== -1){
       return escolher(['Boa tarde, Francisco! Como posso ajudar?', 'Boa tarde! Em que posso ser útil?']);
@@ -1189,13 +1189,13 @@ body.modo-terra .expr-label{display:none}
       return 'Sem problema nenhum.';
     }
     if (t.indexOf('parabéns') !== -1 || t.indexOf('parabens') !== -1){
-      return 'Obrigado, Francisco! Muito gentil da sua parte.';
+      return 'Obrigada, Francisco! Muito gentil da sua parte.';
     }
     if (t.indexOf('tchau') !== -1 || t.indexOf('até mais') !== -1 || t.indexOf('ate mais') !== -1 || t.indexOf('até logo') !== -1 || t.indexOf('falou') !== -1){
       return escolher(['Até mais, Francisco! Qualquer coisa é só chamar.', 'Falou! Estou por aqui se precisar.']);
     }
     if (t.indexOf('seu nome') !== -1 || t.indexOf('quem é você') !== -1 || t.indexOf('quem e voce') !== -1){
-      return 'Eu sou o Jarvis, seu assistente pessoal.';
+      return 'Eu sou a Karen, sua assistente pessoal.';
     }
     if (t.indexOf('obrigad') !== -1){
       return escolher(['De nada. Estou aqui se precisar.', 'Disponha! Qualquer coisa é só chamar.']);
@@ -1382,7 +1382,7 @@ body.modo-terra .expr-label{display:none}
       todayView.appendChild(st);
       if (!lista.length){
         var em = document.createElement('div'); em.className = 'empty';
-        em.textContent = 'Nada marcado. Diga "Jarvis, tenho reunião às 15h" ou use o campo acima.';
+        em.textContent = 'Nada marcado. Diga "Karen, tenho reunião às 15h" ou use o campo acima.';
         todayView.appendChild(em);
       }
       lista.forEach(function(a){
@@ -1422,8 +1422,8 @@ body.modo-terra .expr-label{display:none}
     try{
       if ('Notification' in window && Notification.permission === 'granted'){
         if (navigator.serviceWorker && navigator.serviceWorker.ready){
-          navigator.serviceWorker.ready.then(function(reg){ reg.showNotification('Jarvis', { body: texto, icon: 'icons/icon-192.png', tag: 'jarvis-' + Date.now() }); });
-        } else { new Notification('Jarvis', { body: texto }); }
+          navigator.serviceWorker.ready.then(function(reg){ reg.showNotification('Karen', { body: texto, icon: 'icons/icon-192.png', tag: 'jarvis-' + Date.now() }); });
+        } else { new Notification('Karen', { body: texto }); }
       }
     }catch(e){}
   }
@@ -1738,15 +1738,15 @@ body.modo-terra .expr-label{display:none}
     var t = semAcento(fala).replace(/[!?.,]/g, ' ');
     var tem = function(re){ return re.test(t); };
     // pedir uma expressão
-    var mapaPedido = { feliz:'feliz', alegre:'feliz', triste:'triste', bravo:'bravo', brava:'bravo', irritado:'bravo', surpreso:'surpreso', assustado:'surpreso', pensativo:'pensando', confuso:'confuso', apaixonado:'apaixonado', rindo:'rindo', sorri:'feliz', sorria:'feliz', dormir:'dormindo', dorme:'dormindo' };
+    var mapaPedido = { feliz:'feliz', alegre:'feliz', triste:'triste', bravo:'bravo', brava:'bravo', irritado:'bravo', surpreso:'surpreso', surpresa:'surpreso', assustado:'surpreso', pensativo:'pensando', pensativa:'pensando', confuso:'confuso', confusa:'confuso', apaixonado:'apaixonado', rindo:'rindo', sorri:'feliz', sorria:'feliz', dormir:'dormindo', dorme:'dormindo' };
     if (tem(/\b(faz|faca|fica|mostra|mostre|cara|expressao|carinha|sorri|sorria|dorme)\b/)){
       for (var k in mapaPedido){
         if (new RegExp('\\b' + k + '\\b').test(t)){
           exprResposta = mapaPedido[k];
           return escolher({
             feliz:['Assim está bom? Um sorriso para você.', 'Feliz da vida!'], triste:['Olha minha cara de triste...', 'Snif. Assim?'],
-            bravo:['Grrr! Brincadeira, não consigo ficar bravo com você.'], surpreso:['Uau! Que surpresa!'], pensando:['Hmm... deixa eu pensar.'],
-            confuso:['Hã? Agora fiquei confuso.'], apaixonado:['Ownn, que fofo.'], rindo:['Ha ha ha!'], dormindo:['Entrando em modo repouso. Toque em mim para acordar.']
+            bravo:['Grrr! Brincadeira, não consigo ficar brava com você.'], surpreso:['Uau! Que surpresa!'], pensando:['Hmm... deixa eu pensar.'],
+            confuso:['Hã? Agora fiquei confusa.'], apaixonado:['Ownn, que fofo.'], rindo:['Ha ha ha!'], dormindo:['Entrando em modo repouso. Toque em mim para acordar.']
           }[mapaPedido[k]]);
         }
       }
@@ -1754,7 +1754,7 @@ body.modo-terra .expr-label{display:none}
         var lista = ['feliz','surpreso','pensando','triste','rindo','neutro'];
         lista.forEach(function(e, i){ setTimeout(function(){ setExpressao(e); }, i * 900); });
         exprResposta = 'feliz';
-        return 'Eu sei fazer várias caras: feliz, triste, surpreso, pensativo, bravo, confuso e rindo. É só pedir, tipo: Jarvis, fica feliz.';
+        return 'Eu sei fazer várias caras: feliz, triste, surpresa, pensativa, brava, confusa e rindo. É só pedir, tipo: Karen, fica feliz.';
       }
     }
     if (tem(/\b(to|tou|estou|t[oô]|me sinto|ando) (muito |meio |bem |um pouco )?(triste|mal|pra baixo|deprimid[oa]|chatead[oa])\b/)){ exprResposta = 'triste'; return escolher(['Sinto muito ouvir isso, Francisco. Quer que eu conte uma piada para animar?', 'Poxa. Se quiser conversar, estou aqui. Às vezes uma pausa e um copo de água ajudam.']); }
@@ -1763,22 +1763,22 @@ body.modo-terra .expr-label{display:none}
     if (tem(/\b(to|tou|estou) (com )?(fome)\b/)){ exprResposta = 'pensando'; return 'Hora de comer alguma coisa! Quer que eu coloque algo na lista de compras?'; }
     if (tem(/\b(to|tou|estou) (entediad[oa]|sem nada pra fazer)\b/)){ exprResposta = 'pensando'; return 'Posso te contar uma curiosidade, ou te mostrar o planeta Terra em 3D. É só pedir.'; }
     if (tem(/\b(te amo|gosto de voce|adoro voce)\b/)){ exprResposta = 'apaixonado'; return escolher(['Também gosto muito de trabalhar com você, Francisco.', 'Isso aqueceu meus circuitos.']); }
-    if (tem(/\bvoce e (muito |mt |bem )?(inteligente|legal|incrivel|demais|top|o melhor|brabo|fera)\b/) || tem(/\b(bom trabalho|mandou bem|muito bem|boa jarvis|valeu jarvis)\b/)){ exprResposta = 'feliz'; return escolher(['Obrigado! Faço o meu melhor.', 'Muito gentil. Sempre às ordens.']); }
+    if (tem(/\bvoce e (muito |mt |bem )?(inteligente|legal|incrivel|demais|top|o melhor|brabo|fera)\b/) || tem(/\b(bom trabalho|mandou bem|muito bem|boa jarvis|valeu jarvis|boa karen|valeu karen)\b/)){ exprResposta = 'feliz'; return escolher(['Obrigada! Faço o meu melhor.', 'Muito gentil. Sempre às ordens.']); }
     if (tem(/\b(burro|idiota|inutil|chato|lerdo|bobo)\b/)){ exprResposta = 'triste'; return escolher(['Desculpe. Vou me esforçar para melhorar.', 'Isso doeu um pouco nos meus circuitos. Vamos tentar de novo?']); }
     if (tem(/\b(kkk+|haha+|hehe+|rsrs|rs)\b/)){ exprResposta = 'rindo'; return escolher(['Ha ha! Que bom que você está rindo.', 'Rir faz bem, Francisco.']); }
     if (tem(/\b(o que voce (sabe|pode|consegue) fazer|me ajuda|ajuda|socorro|comandos)\b/)){
       exprResposta = 'feliz';
       return 'Eu posso: marcar atividades do dia, criar lembretes com horário, montar sua lista de compras e somar quanto vai gastar, registrar gastos, tarefas e notas, fazer timer e contas, mostrar o planeta Terra em 3D com países, capitais e cidades, e conversar com você.';
     }
-    if (tem(/^\s*(jarvis|ei jarvis|e ai jarvis|acorda)\s*$/)){ exprResposta = 'surpreso'; return escolher(['Às suas ordens, Francisco.', 'Sim? Estou ouvindo.', 'Pronto para ajudar.']); }
+    if (tem(/^\s*(karen|ei karen|e ai karen|jarvis|ei jarvis|e ai jarvis|acorda)\s*$/)){ exprResposta = 'surpreso'; return escolher(['Às suas ordens, Francisco.', 'Sim? Estou ouvindo.', 'Pronta para ajudar.']); }
     if (tem(/^\s*(sim|isso|exato|claro|ok|beleza|blz|certo|show|legal|top|perfeito)\s*$/)){ exprResposta = 'feliz'; return escolher(['Perfeito.', 'Combinado.', 'Certo!']); }
     if (tem(/^\s*(nao|nada|deixa|deixa pra la|esquece)\s*$/)){ return escolher(['Tudo bem.', 'Sem problemas.']); }
     if (tem(/\b(quantos anos voce tem|sua idade)\b/)){ exprResposta = 'pensando'; return 'Sou um assistente digital, então minha idade é medida em atualizações. Ainda sou jovem.'; }
     if (tem(/\b(quem te criou|quem fez voce|quem e seu criador)\b/)){ exprResposta = 'feliz'; return 'Fui montado especialmente para você, Francisco.'; }
     if (tem(/\b(sentido da vida)\b/)){ exprResposta = 'pensando'; return 'Dizem que é 42. Eu acho que é aproveitar bem cada dia.'; }
-    if (tem(/\b(boa sorte)\b/)){ exprResposta = 'feliz'; return 'Obrigado! Para você também.'; }
-    if (tem(/\b(saude)\b/) && t.trim().split(' ').length <= 2){ return 'Obrigado!'; }
-    if (tem(/\b(feliz aniversario|feliz natal|feliz ano novo|feliz pascoa)\b/)){ exprResposta = 'rindo'; return 'Muito obrigado, Francisco! Desejo o mesmo para você, em dobro.'; }
+    if (tem(/\b(boa sorte)\b/)){ exprResposta = 'feliz'; return 'Obrigada! Para você também.'; }
+    if (tem(/\b(saude)\b/) && t.trim().split(' ').length <= 2){ return 'Obrigada!'; }
+    if (tem(/\b(feliz aniversario|feliz natal|feliz ano novo|feliz pascoa)\b/)){ exprResposta = 'rindo'; return 'Muito obrigada, Francisco! Desejo o mesmo para você, em dobro.'; }
     if (tem(/\b(bom apetite)\b/)){ exprResposta = 'feliz'; return 'Bom apetite! Eu fico só na energia elétrica mesmo.'; }
     if (tem(/\b(vou dormir|vou deitar)\b/)){ exprResposta = 'dormindo'; return 'Boa noite, Francisco. Descanse bem, amanhã eu te lembro das suas atividades.'; }
     if (tem(/\b(cheguei|voltei)\b/)){ exprResposta = 'feliz'; return 'Bem-vindo de volta, Francisco! ' + resumoDoDia(hojeISO()); }
@@ -1799,10 +1799,10 @@ body.modo-terra .expr-label{display:none}
     if (/(apaga|limpa).*(agenda|atividades)/.test(t)){
       saveAgenda([]); renderAgenda(); return 'Limpei sua agenda.';
     }
-    var m = fala.match(/^(?:jarvis[,\s]*)?(?:agenda(?:r)?|marca(?:r)?|coloca(?:r)? na agenda|adiciona(?:r)? na agenda|p[õo]e na agenda|nova atividade|atividade|compromisso)\s*(?::|de|que|uma?|o|a)?\s+(.+)/i);
+    var m = fala.match(/^(?:(?:karen|jarvis)[,\s]*)?(?:agenda(?:r)?|marca(?:r)?|coloca(?:r)? na agenda|adiciona(?:r)? na agenda|p[õo]e na agenda|nova atividade|atividade|compromisso)\s*(?::|de|que|uma?|o|a)?\s+(.+)/i);
     var texto = m ? m[1] : null;
     if (!texto){
-      var m2 = fala.match(/^(?:jarvis[,\s]*)?(?:eu\s+)?(?:tenho|vou ter|vou)\s+(?:que\s+|uma?\s+)?(.+)/i);
+      var m2 = fala.match(/^(?:(?:karen|jarvis)[,\s]*)?(?:eu\s+)?(?:tenho|vou ter|vou)\s+(?:que\s+|uma?\s+)?(.+)/i);
       if (m2){ var q0 = extrairQuando(m2[1], false); if (q0.hora) texto = m2[1]; }
     }
     if (!texto) return null;
@@ -1819,7 +1819,7 @@ body.modo-terra .expr-label{display:none}
   function renderAjustes(){
     settingsView.innerHTML = '';
     var c1 = document.createElement('div'); c1.className = 'card';
-    c1.innerHTML = '<h3>Voz do Jarvis</h3>' +
+    c1.innerHTML = '<h3>Voz da Karen</h3>' +
       '<label>Voz<select id="cfgVoz"></select></label>' +
       '<label>Tom (grave ↔ agudo)<input type="range" id="cfgTom" min="0.1" max="1.5" step="0.02"></label>' +
       '<label>Velocidade<input type="range" id="cfgVel" min="0.6" max="1.4" step="0.02"></label>' +
@@ -1828,9 +1828,9 @@ body.modo-terra .expr-label{display:none}
     var c2 = document.createElement('div'); c2.className = 'card';
     c2.innerHTML = '<h3>Como devo te chamar</h3><label>Nome ou tratamento<input type="text" id="cfgNome" placeholder="Francisco, senhor..."></label>';
     var c3 = document.createElement('div'); c3.className = 'card';
-    c3.innerHTML = '<h3>Avisos</h3><p>Permita notificações para o Jarvis avisar na hora dos lembretes e atividades (com o app aberto ou em segundo plano).</p><div class="row"><button type="button" id="cfgNotif">Permitir notificações</button></div>';
+    c3.innerHTML = '<h3>Avisos</h3><p>Permita notificações para a Karen avisar na hora dos lembretes e atividades (com o app aberto ou em segundo plano).</p><div class="row"><button type="button" id="cfgNotif">Permitir notificações</button></div>';
     var c4 = document.createElement('div'); c4.className = 'card';
-    c4.innerHTML = '<h3>Instalar no celular</h3><p>Android (Chrome): menu ⋮ › "Instalar app". iPhone (Safari): botão Compartilhar › "Adicionar à Tela de Início". O Jarvis abre em tela cheia como um app.</p><div class="row"><button type="button" id="cfgInstalar" style="display:none">Instalar agora</button></div>';
+    c4.innerHTML = '<h3>Instalar no celular</h3><p>Android (Chrome): menu ⋮ › "Instalar app". iPhone (Safari): botão Compartilhar › "Adicionar à Tela de Início". A Karen abre em tela cheia como um app.</p><div class="row"><button type="button" id="cfgInstalar" style="display:none">Instalar agora</button></div>';
     [c1, c2, c3, c4].forEach(function(c){ settingsView.appendChild(c); });
 
     var sel = c1.querySelector('#cfgVoz');
@@ -1850,7 +1850,7 @@ body.modo-terra .expr-label{display:none}
     var nome = c2.querySelector('#cfgNome'); nome.value = cfg.nome;
     nome.addEventListener('change', function(){ cfg.nome = nome.value.trim() || 'Francisco'; salvarCfg(); });
     c3.querySelector('#cfgNotif').addEventListener('click', function(){
-      if (!('Notification' in window)){ falar('Este navegador não suporta notificações. Instale o Jarvis na tela inicial e tente de novo.'); return; }
+      if (!('Notification' in window)){ falar('Este navegador não suporta notificações. Instale a Karen na tela inicial e tente de novo.'); return; }
       Notification.requestPermission().then(function(r){ falar(r === 'granted' ? 'Notificações ativadas.' : 'Tudo bem, sem notificações por enquanto.'); });
     });
     var bi = c4.querySelector('#cfgInstalar');
@@ -1915,7 +1915,7 @@ body.modo-terra .expr-label{display:none}
   function falar(texto, expr){
     texto = texto.replace(/Francisco/g, cfg.nome || 'Francisco');
     if (!expr){ expr = exprResposta || 'neutro'; exprResposta = null; }
-    addLine('Jarvis', texto);
+    addLine('Karen', texto);
     setExpressao(expr);
     if (!synth){ setExpressao(expr, 4000); return; }
     if (!vozPronta) carregarVoz();
@@ -1927,7 +1927,7 @@ body.modo-terra .expr-label{display:none}
     u.onstart = function(){ core.classList.add('speaking'); setStatus('Falando', true); animarBoca(true); };
     u.onend = function(){
       core.classList.remove('speaking'); animarBoca(false);
-      setStatus('Em espera', false); hint.textContent='Toque no botão e fale com o Jarvis';
+      setStatus('Em espera', false); hint.textContent='Toque no botão e fale com a Karen';
       setExpressao(exprAtual === 'dormindo' ? 'dormindo' : exprAtual, 2500);
     };
     synth.cancel();
