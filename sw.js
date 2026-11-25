@@ -1,5 +1,5 @@
 // Guarda o app no celular para abrir rápido e funcionar sem internet.
-var CACHE = 'jarvis-v6';
+var CACHE = 'jarvis-v7';
 var ARQUIVOS = ['./', 'index.html', 'manifest.webmanifest', 'data/geo.js', 'vendor/globe.gl.min.js',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-180.png'];
 
@@ -15,7 +15,7 @@ self.addEventListener('activate', function(e){
 self.addEventListener('fetch', function(e){
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    fetch(e.request).then(function(r){
+    fetch(e.request, { cache: 'no-cache' }).then(function(r){
       if (r.ok && new URL(e.request.url).origin === location.origin){
         var copia = r.clone();
         caches.open(CACHE).then(function(c){ c.put(e.request, copia); });
