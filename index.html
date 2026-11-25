@@ -1056,7 +1056,47 @@ body.modo-terra .expr-label{display:none}
     exprResposta = 'pensando';
     if (!isFinite(r)) return 'Não dá pra dividir por zero. Nem eu consigo essa!';
     if (isNaN(r)) return 'Essa conta não tem resultado nos números reais.';
+    if (r === 67){ exprResposta = 'rindo'; return 'Dá 67... SIX SEVEEEN! 🤲🤲'; }
     return escolher(['Dá ', 'O resultado é ', 'É ']) + formatarNumero(r) + '.';
+  }
+
+  // ---------- gírias e easter eggs ----------
+  function responderGirias(fala){
+    var t = semAcento(fala).replace(/[!?.,;🤲]/g, ' ').replace(/\b(karen|ei|ai|e ai)\b/g, ' ').replace(/\s+/g, ' ').trim();
+    var curta = t.split(' ').length <= 5; // gírias soltas só valem em frase curta, pra não atrapalhar comandos
+    var tem = function(re){ return re.test(t); };
+    var aura = function(){ return (Math.random() < 0.8 ? '+' : '-') + escolher(['500', '1000', '6700', '9999', '1 milhão']); };
+
+    if (/^(6 ?7|67|six ?seven|seis ?sete|six seveen+|six sevennn+|sixseven)$/.test(t) || (curta && tem(/\b(67|six seven)\b/))){
+      exprResposta = 'rindo';
+      return escolher(['SIX SEVEEEEN! 🤲🤲', 'Seis... SETEEEE! 🤲', '6️⃣7️⃣ Não tem como fugir do six seven.', 'Six seven. Eu nem sei o que significa, mas tô junto. 🤲']);
+    }
+    if (!curta) return null;
+    if (tem(/\b(farmar aura|farmando aura|farmei aura)\b/)){ exprResposta = 'feliz'; return 'Farmou mesmo! +' + escolher(['1000', '6700', '9999']) + ' de aura pra você. 😎'; }
+    if (tem(/\b(quanto de aura|minha aura|tenho aura|qual (e )?minha aura)\b/)){ exprResposta = 'pensando'; return 'Calculando... Sua aura atual é ' + aura() + '. Continua assim.'; }
+    if (tem(/\b(perdeu aura|menos aura|- ?1000 de aura|perdi aura)\b/)){ exprResposta = 'triste'; return 'Menos 1000 de aura. Dá pra recuperar, confia.'; }
+    if (tem(/^aura$/)){ exprResposta = 'feliz'; return 'Aura infinita detectada. ✨'; }
+    if (tem(/\b(voce e sigma|e sigma|sigma)\b/)){ exprResposta = 'feliz'; return escolher(['Sigma é meu nome do meio. 🗿', 'Sigma? Eu sou o próprio sigma. 🗿', 'Modo sigma ativado. 🗿']); }
+    if (tem(/\b(voce e beta|beta|betinha)\b/)){ exprResposta = 'rindo'; return escolher(['Beta? Aqui não. Só sigma. 🗿', 'Betinha é quem não tem uma Karen no celular.']); }
+    if (tem(/\b(chad|gigachad)\b/)){ exprResposta = 'feliz'; return escolher(['Chad reconhece Chad. 🗿', 'Gigachad mode: ON.']); }
+    if (tem(/\b(alpha|alfa)\b/) && !tem(/geracao/)){ exprResposta = 'feliz'; return 'Alpha, sigma, Chad... eu sou todos ao mesmo tempo. 🗿'; }
+    if (tem(/\b(sabor|tem sabor|ta sabor|que sabor|sabores)\b/)){ exprResposta = 'rindo'; return escolher(['Sabor? Só se for sabor de vitória. 😋', 'Sabor... sabor de quem já farmou muita aura.', 'Tá sabor demais! 😋']); }
+    if (tem(/\b(ficou gag|gag|to gag|fiquei gag)\b/)){ exprResposta = 'surpreso'; return escolher(['GAG TOTAL! 😱', 'Fiquei gag também, não vou mentir.']); }
+    if (tem(/\b(cringe|que cringe|muito cringe)\b/)){ exprResposta = 'confuso'; return escolher(['Cringe nível máximo. 😬', 'Isso foi tão cringe que meus circuitos travaram.']); }
+    if (tem(/\b(tankar|tanko|nao tanko|tankei|nao da pra tankar)\b/)){ exprResposta = 'rindo'; return escolher(['Eu tanko tudo. Menos divisão por zero.', 'Não tem como tankar, né? Entendo.']); }
+    if (tem(/\b(delulu)\b/)){ exprResposta = 'rindo'; return 'Delulu é a solução, já dizia o ditado. 🌈'; }
+    if (tem(/\b(papo reto|pprt)\b/)){ exprResposta = 'feliz'; return 'Papo reto, sem enrolação. Pode falar.'; }
+    if (tem(/\b(pode pa|pdp)\b/)){ exprResposta = 'feliz'; return 'Pode pá! 🤝'; }
+    if (tem(/\b(juro|jura)\b/) && t.split(' ').length <= 2){ exprResposta = 'surpreso'; return 'Juro! Por todos os meus circuitos.'; }
+    if (tem(/\b(plot twist|plot)\b/)){ exprResposta = 'surpreso'; return 'Plot twist: a Karen sempre esteve certa. 😱'; }
+    if (tem(/\b(flopou|flop|flopei)\b/)){ exprResposta = 'triste'; return 'Flopou... mas a gente tenta de novo.'; }
+    if (tem(/\b(10 ?\/ ?10|dez de dez|nota 10)\b/)){ exprResposta = 'feliz'; return 'Experiência 10/10, sem defeitos.'; }
+    if (tem(/\b(skibidi)\b/)){ exprResposta = 'rindo'; return 'Skibidi bop bop yes yes. 🚽'; }
+    if (tem(/\b(tralalero|tralala)\b/)){ exprResposta = 'rindo'; return 'Tralalero tralalá! 🦈👟'; }
+    if (tem(/\b(tung tung|sahur)\b/)){ exprResposta = 'rindo'; return 'Tung tung tung tung sahur! 🪵'; }
+    if (tem(/\b(aff+|af+ vei|aff vei)\b/)){ exprResposta = 'confuso'; return 'Aff, véi... o que eu fiz agora?'; }
+    if (tem(/\b(mogar|mogou|mogado)\b/)){ exprResposta = 'feliz'; return 'Mogou geral. Ninguém segura. 🗿'; }
+    return null;
   }
 
   // ---------- cumprimentos ----------
@@ -1116,6 +1156,7 @@ body.modo-terra .expr-label{display:none}
       exprResposta = 'rindo';
       return escolher(['Hétera, sigma e Chad. Próxima pergunta.', 'Sou hétera, sigma e Chad. Isso não se discute.', 'Hétera, sigma e Chad, obviamente. 😎']);
     }
+    var rGiria = responderGirias(fala); if (rGiria) return rGiria;
     var rOi = responderCumprimento(fala); if (rOi) return rOi;
     var rAgenda = responderAgenda(fala); if (rAgenda) return rAgenda;
     var rGeo = responderGeografia(fala); if (rGeo) return rGeo;
@@ -2023,7 +2064,7 @@ body.modo-terra .expr-label{display:none}
     setExpressao(expr);
     if (!synth){ setExpressao(expr, 4000); return; }
     if (!vozPronta) carregarVoz();
-    var u = new SpeechSynthesisUtterance(texto);
+    var u = new SpeechSynthesisUtterance(texto.replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{20E3}]/gu, '').replace(/10\/10/g, 'dez de dez'));
     u.lang = (vozEscolhida && vozEscolhida.lang) ? vozEscolhida.lang : 'pt-BR';
     if (vozEscolhida) u.voice = vozEscolhida;
     u.rate = cfg.velocidade || 0.94;
