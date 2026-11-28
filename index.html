@@ -2420,6 +2420,10 @@ body.modo-terra .expr-label{display:none}
             function(e){ carregandoLocal = null; throw e; });
     return carregandoLocal;
   }
+  function pareceNoticia(fala){
+    var t = semAcento(fala);
+    return /\b(noticia|noticias|aconteceu|ontem|hoje|agora|esta semana|essa semana|placar|resultado do jogo|quem ganhou|quem venceu|vai chover|previsao|clima|temperatura|lancamento|proximo filme|quando sai|quando estreia|preco|cotacao|dolar|eleicao|campeonato|tabela do)\b/.test(t);
+  }
   function perguntarIALocal(){
     if (iaOcupada) return;
     if (!suportaIALocal()){ terminarIA('Esse celular não consegue rodar a IA. Precisa de um iPhone com iOS 26 ou mais novo.'); return; }
@@ -2469,8 +2473,10 @@ body.modo-terra .expr-label{display:none}
     var resposta = responderA(trocarTuPorVoce(fala));
     if (resposta === SEM_RESPOSTA){
       if (cfg.iaUrl && cfg.iaSenha){ perguntarIA(fala); return; }
-      if (cfg.iaLocal){ perguntarIALocal(); return; }
-      resposta = respostaNaoSei();
+      if (cfg.iaLocal && pareceNoticia(fala)){
+        resposta = 'Notícias e coisas de agora eu só consigo com a IA na nuvem, o Gemini. A IA do celular não sabe o que aconteceu hoje e poderia inventar.';
+      } else if (cfg.iaLocal){ perguntarIALocal(); return; }
+      else resposta = respostaNaoSei();
     }
     ultimaRespostaKaren = resposta;
     guardarHistorico('karen', resposta);

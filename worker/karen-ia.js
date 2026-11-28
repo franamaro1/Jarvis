@@ -7,6 +7,7 @@
 //   KAREN_SENHA        uma senha inventada; a mesma vai nos Ajustes da Karen
 // Opcional:
 //   MODELO             troca o modelo (ex.: gemini-flash-latest, claude-haiku-5-5)
+//   SEM_BUSCA          qualquer valor desliga a busca no Google (notícias)
 
 const ORIGENS_PERMITIDAS = [
   'https://franamaro1.github.io',
@@ -25,6 +26,7 @@ function instrucoes(nome, agora) {
     'O ' + nome + ' é estudante, então mantenha tudo apropriado para a idade: nada de conteúdo adulto, violento ou perigoso. Em assuntos sérios (saúde, segurança, tristeza), seja gentil e sugira conversar com os pais ou um adulto de confiança.',
     'Se pedirem ajuda com dever de casa, explique o raciocínio em vez de só dar a resposta.',
     'Se não souber algo, diga que não sabe. Não invente.',
+    'Para notícias, resultados de jogos, clima ou qualquer coisa recente, use a busca e responda com a informação mais nova, dizendo de quando ela é.',
     'Nunca peça dados pessoais (endereço, escola, telefone, senhas, fotos) e, se o ' + nome + ' contar algum, lembre com carinho que não precisa compartilhar isso.',
     'Agora é ' + agora + ' (horário de Brasília).',
   ].join(' ');
@@ -58,6 +60,7 @@ async function perguntarGemini(env, sistema, mensagens) {
         systemInstruction: { parts: [{ text: sistema }] },
         contents: mensagens.map(m => ({ role: m.papel === 'karen' ? 'model' : 'user', parts: [{ text: m.texto }] })),
         generationConfig: { maxOutputTokens: 400, temperature: 0.8 },
+        tools: env.SEM_BUSCA ? undefined : [{ google_search: {} }], // busca no Google pra notícias e coisas de agora
       }),
     });
     if (r.ok) {

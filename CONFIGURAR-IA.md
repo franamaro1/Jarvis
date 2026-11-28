@@ -68,6 +68,7 @@ O cofre só aceita pedidos que venham do site da Karen e tenham a senha certa.
 4. Toque em **Testar IA**, volte na aba **Conversa** e veja se ela respondeu. 🎉
 
 Pronto! Agora, quando a Karen não souber algo, ela pergunta pra IA.
+A busca no Google já vem ligada, então ela também responde notícias, resultados de jogos e outras coisas recentes. 📰
 
 ---
 
